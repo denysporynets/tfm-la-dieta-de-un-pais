@@ -1,0 +1,207 @@
+"""
+04_simulador_whatif.py — Simulador What-If: ajusta la dieta → predicción CO₂ en tiempo real
+"""
+
+import streamlit as st
+import plotly.graph_objects as go
+import numpy as np
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils import (
+    load_clusters,
+    load_lgb_model,
+    MACROS, MACRO_LABELS, MACRO_COLORS,
+    CLUSTER_NAMES, CLUSTER_COLORS,
+    predict_co2,
+)
+
+st.set_page_config(
+    page_title="Simulador What-If · La Dieta de un País",
+    page_icon="🎛️",
+    layout="wide",
+)
+
+st.title("🎛️ Simulador What-If")
+st.caption(
+    "Ajusta la composición dietaria con los sliders y obtén la predicción de CO₂ en tiempo real. "
+    "Modelo: LightGBM (R²=0.864 · 5-fold CV)"
+)
+
+df = load_clusters()
+paises = sorted(df["Area"].unique())
+
+# ── SHAP narrativo (top-5 drivers, texto fijo basado en ranking global) ──
+SHAP_NARRATIVA = [
+    ("Cereales", "Principal discriminador entre tipologías. Alto % de cereales → alta varianza CO₂."),
+    ("Azúcares", "Señal de dieta procesada/transición nutricional. A mayor % azúcares, mayor CO₂ asociado."),
+    ("Carnes", "Coherente con IPCC: ganadería intensiva = alta huella. Efecto amplificado en C0."),
+    ("Tubérculos", "Marcador clave de la tipología C1 (Nigeria). Tubérculos → baja huella por kcal."),
+    ("Aceites y Grasas", "Señal de dietas de renta media-alta. Moderado impacto en CO₂."),
+]
+
+# ── LAYOUT ───────────────────────────────────────────────────────
+col_ctrl, col_res = st.columns([1, 1.4])
+
+with col_ctrl:
+    st.subheader("Configura la dieta")
+
+    pais_ref = st.selectbox(
+        "Partir de un país (2022)",
+        ["— personalizado —"] + paises,
+        index=paises.index("Spain") + 1 if "Spain" in paises else 1,
+    )
+
+    # Valores iniciales
+    if pais_ref != "— personalizado —":
+        fila_ref = df[(df["Area"] == pais_ref) & (df["Year"] == 2022)]
+        if fila_ref.empty:
+            fila_ref = df[df["Area"] == pais_ref].sort_values("Year").iloc[[-1]]
+        vals_init   = {m: float(fila_ref[m].values[0]) * 100 for m in MACROS}
+        cpi_init    = float(fila_ref["Food_CPI"].values[0])   # unidades brutas (base 2015=100)
+        cluster_init = int(fila_ref["cluster_id"].values[0])
+        co2_ref_val  = float(fila_ref["CO2eq_t_per_capita"].values[0])
+    else:
+        vals_init = {m: 100 / 7 for m in MACROS}
+        cpi_init  = 110.0
+        cluster_init = 0
+        co2_ref_val  = None
+
+    st.markdown("**Proporciones calóricas (% de cada macrocategoría)**")
+    sliders = {}
+    for macro in MACROS:
+        sliders[macro] = st.slider(
+            MACRO_LABELS[macro],
+            min_value=0,
+            max_value=100,
+            value=max(1, int(round(vals_init[macro]))),
+            step=1,
+            key=f"sl_{macro}",
+        )
+
+    total_raw = sum(sliders.values())
+    if total_raw == 0:
+        st.error("Al menos una macrocategoría debe ser > 0.")
+        st.stop()
+
+    pct_norm = {m: sliders[m] / total_raw for m in MACROS}
+    st.info(f"Suma bruta de sliders: **{total_raw}** → normalizado automáticamente a 100%")
+
+    st.markdown("---")
+    cpi_slider = st.slider(
+        "Food CPI (2015 = 100)",
+        min_value=50,
+        max_value=500,
+        value=max(50, min(500, int(round(cpi_init)))),
+        step=5,
+        help="Índice de precios de alimentos (unidades brutas, base 2015=100). Rango real: ~45–1076.",
+    )
+
+    cluster_radio = st.radio(
+        "Tipología dietaria del escenario",
+        options=list(CLUSTER_NAMES.keys()),
+        format_func=lambda c: f"C{c} — {CLUSTER_NAMES[c]}",
+        index=cluster_init,
+        horizontal=False,
+    )
+
+# ── PREDICCIÓN ───────────────────────────────────────────────────
+pct_list  = [pct_norm[m] for m in MACROS]
+co2_pred  = predict_co2(pct_list, cpi_slider, cluster_radio)
+color_gauge = "#27ae60" if co2_pred < 2 else "#f0a500" if co2_pred < 4 else "#c0392b"
+
+with col_res:
+    st.subheader("Resultado de la simulación")
+
+    # KPIs
+    k1, k2 = st.columns(2)
+    k1.metric(
+        "CO₂ predicho",
+        f"{co2_pred:.2f} t/cáp",
+        delta=f"{co2_pred - co2_ref_val:+.2f} t vs {pais_ref}" if co2_ref_val else None,
+        delta_color="inverse",
+    )
+    k2.metric(
+        "Tipología del escenario",
+        f"C{cluster_radio} — {CLUSTER_NAMES[cluster_radio]}",
+    )
+
+    # Gauge CO₂
+    fig_gauge = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=co2_pred,
+        number={"suffix": " t CO₂/cáp", "font": {"size": 28}},
+        gauge={
+            "axis": {"range": [0, 12], "ticksuffix": " t"},
+            "bar": {"color": color_gauge},
+            "steps": [
+                {"range": [0, 2],   "color": "#d4edda"},
+                {"range": [2, 4],   "color": "#fff3cd"},
+                {"range": [4, 12],  "color": "#f8d7da"},
+            ],
+            "threshold": {
+                "line": {"color": "#c0392b", "width": 3},
+                "thickness": 0.8,
+                "value": 4,
+            },
+        },
+        title={"text": "CO₂eq per cápita proyectado"},
+    ))
+    fig_gauge.update_layout(height=300, margin=dict(t=40, b=10, l=30, r=30))
+    st.plotly_chart(fig_gauge, use_container_width=True)
+
+    # Radar: escenario vs referencia (si hay país seleccionado)
+    st.markdown("**Composición dietaria del escenario**")
+    etiquetas_r = [MACRO_LABELS[m] for m in MACROS] + [MACRO_LABELS[MACROS[0]]]
+    valores_esc = [pct_norm[m] for m in MACROS] + [pct_norm[MACROS[0]]]
+
+    fig_radar = go.Figure()
+    fig_radar.add_trace(go.Scatterpolar(
+        r=valores_esc,
+        theta=etiquetas_r,
+        fill="toself",
+        fillcolor="rgba(37,99,235,0.15)",
+        line=dict(color="#2563eb", width=2.5),
+        name="Escenario simulado",
+    ))
+
+    if co2_ref_val is not None:
+        vals_ref_r = [float(df[(df["Area"] == pais_ref) & (df["Year"] == 2022)][m].values[0]) for m in MACROS]
+        vals_ref_r_c = vals_ref_r + [vals_ref_r[0]]
+        fig_radar.add_trace(go.Scatterpolar(
+            r=vals_ref_r_c,
+            theta=etiquetas_r,
+            fill="toself",
+            fillcolor="rgba(192,57,43,0.1)",
+            line=dict(color="#c0392b", width=1.5, dash="dash"),
+            name=f"{pais_ref} 2022",
+        ))
+
+    fig_radar.update_layout(
+        polar=dict(radialaxis=dict(visible=True, range=[0, 0.7], tickformat=".0%")),
+        height=360,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.15),
+        margin=dict(t=20, b=60),
+    )
+    st.plotly_chart(fig_radar, use_container_width=True)
+
+# ── DRIVERS SHAP ──────────────────────────────────────────────────
+st.markdown("---")
+st.subheader("📌 Top-5 drivers de CO₂ (SHAP global)")
+cols_shap = st.columns(5)
+for i, (macro_name, narrativa) in enumerate(SHAP_NARRATIVA):
+    with cols_shap[i]:
+        st.markdown(
+            f"<div style='background:#f8f9fa; border-radius:8px; padding:10px; height:100%;'>"
+            f"<strong style='font-size:0.85rem;'>#{i+1} {macro_name}</strong><br>"
+            f"<span style='font-size:0.78rem; color:#555;'>{narrativa}</span>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+
+st.caption(
+    "Ranking basado en |SHAP| medio global del Motor B (LightGBM, 5-fold CV, 390 obs). "
+    "Los signos SHAP se interpretan con el beeswarm — en datos composicionales (suma=1.0) "
+    "el SHAP medio con signo ≈ 0 es comportamiento esperado."
+)

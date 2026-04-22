@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mapeo_fao_completo.py — Aguacate Team · TFM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f6fa; color: #1a1a2e; padding: 40px 20px; }
+    .container { max-width: 860px; margin: 0 auto; }
+    .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; border-radius: 12px; padding: 28px 36px; margin-bottom: 24px; }
+    .header .tag { display: inline-block; background: #f0a500; color: #1a1a2e; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .header h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+    .header .subtitle { font-size: 0.82rem; opacity: 0.65; }
+    .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .meta-card { background: white; border-radius: 8px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); font-size: 0.83rem; }
+    .meta-card .lbl { color: #888; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .meta-card .val { font-weight: 700; color: #1a1a2e; }
+    .section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin: 28px 0 10px 0; }
+    .highlight { background: #fefce8; border-left: 3px solid #f0a500; padding: 10px 14px; border-radius: 4px; font-size: 0.83rem; line-height: 1.65; color: #555; margin: 14px 0; }
+    .highlight strong { color: #b45309; }
+    .warn { background: #fff7ed; border-left: 3px solid #f97316; padding: 10px 14px; border-radius: 4px; font-size: 0.83rem; line-height: 1.65; color: #555; margin: 14px 0; }
+    .warn strong { color: #c2410c; }
+    .ok { background: #f0fdf4; border-left: 3px solid #16a34a; padding: 10px 14px; border-radius: 4px; font-size: 0.83rem; line-height: 1.65; color: #555; margin: 14px 0; }
+    .ok strong { color: #15803d; }
+
+    /* TABLA RESUMEN MACROCATEGORÍAS */
+    .macro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .macro-card { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 16px 20px; border-top: 3px solid #1a1a2e; }
+    .macro-card h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .macro-card h4 span { font-size: 0.72rem; background: #f0a500; color: #1a1a2e; padding: 1px 7px; border-radius: 10px; font-weight: 700; }
+    .macro-card ul { font-size: 0.78rem; color: #555; padding-left: 16px; line-height: 1.8; }
+    .macro-card .fix-note { font-size: 0.72rem; color: #15803d; font-style: italic; margin-top: 4px; }
+
+    .code-block { background: #1a1a2e; border-radius: 10px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .code-header { background: #16213e; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: #aaa; border-bottom: 1px solid #2a2a4a; }
+    .code-header .filename { color: #f0a500; font-weight: 700; font-family: 'Courier New', monospace; }
+    .code-body { padding: 20px 22px; overflow-x: auto; }
+    pre { font-family: 'Courier New', monospace; font-size: 0.82rem; line-height: 1.7; color: #e0e0e0; white-space: pre; }
+    .kw { color: #c792ea; } .fn { color: #82aaff; } .st { color: #c3e88d; } .cm { color: #546e7a; font-style: italic; } .nm { color: #f78c6c; } .bi { color: #ffcb6b; } .cat { color: #f0a500; font-weight: 700; }
+    .footer { text-align: center; font-size: 0.72rem; color: #aaa; margin-top: 32px; padding-top: 14px; border-top: 1px solid #e0e0e0; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="tag">Diccionario de mapeo · Producción</div>
+    <h1>mapeo_fao_completo.py</h1>
+    <div class="subtitle">Mapeo exhaustivo 87 ítems hoja FBS → 7 macrocategorías dietarias · Aguacate Team · TFM "La Dieta de un País" · 2026</div>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-card"><div class="lbl">Sesión</div><div class="val">Sesión 2 — 03/04/2026</div></div>
+    <div class="meta-card"><div class="lbl">Ítems mapeados</div><div class="val">87 ítems hoja</div></div>
+    <div class="meta-card"><div class="lbl">Macrocategorías</div><div class="val">7</div></div>
+    <div class="meta-card"><div class="lbl">Fixes aplicados</div><div class="val">2 (Sesión 2)</div></div>
+    <div class="meta-card"><div class="lbl">Estado</div><div class="val" style="color:#15803d;">✅ Producción</div></div>
+  </div>
+
+  <div class="ok">
+    <strong>Cómo importar:</strong>
+    <code style="background:#e8f5e9; padding:2px 6px; border-radius:3px; font-family:'Courier New',monospace; font-size:0.85em;">from mapeo_fao_completo import MAPEO_FAO, ITEMS_AGREGADOS, MACRO_COLS</code><br>
+    Usado por <code>02_feature_engineering.ipynb</code> como módulo de configuración central del pipeline.
+  </div>
+
+  <!-- RESUMEN MACROCATEGORÍAS -->
+  <div class="section-label">Las 7 macrocategorías — distribución de ítems</div>
+
+  <div class="macro-grid">
+    <div class="macro-card">
+      <h4>Cereales <span>14 ítems</span></h4>
+      <ul>
+        <li>Wheat, Rice, Maize, Barley, Rye, Oats</li>
+        <li>Millet, Sorghum, Triticale, Buckwheat</li>
+        <li>Fonio, Quinoa, Cereals Other, Beer</li>
+      </ul>
+    </div>
+    <div class="macro-card">
+      <h4>Tubérculos <span>6 ítems</span></h4>
+      <ul>
+        <li>Potatoes, Sweet potatoes, Cassava</li>
+        <li>Yams, Plantains, Roots Other</li>
+      </ul>
+      <div class="fix-note">★ Clave para Clúster Nigeria (28% tubérculos)</div>
+    </div>
+    <div class="macro-card">
+      <h4>Azúcares <span>6 ítems</span></h4>
+      <ul>
+        <li>Sugar cane, Sugar beet</li>
+        <li>Sugar (Raw Equiv.), Sugar non-centrifugal</li>
+        <li>Sweeteners Other, Honey</li>
+      </ul>
+    </div>
+    <div class="macro-card">
+      <h4>Aceites_Grasas <span>23 ítems</span></h4>
+      <ul>
+        <li>Semillas: Soyabeans, Groundnuts, Sunflower, Rape, Palm kernels, Olives…</li>
+        <li>Aceites: Soyabean Oil, Palm Oil, Olive Oil, Coconut Oil…</li>
+        <li>Grasas animales: Butter/Ghee, Lard, Tallow</li>
+      </ul>
+      <div class="fix-note">★ Fix S2: 'Sunflowerseed Oil' + 'Sunflower seed Oil' ambos mapeados</div>
+    </div>
+    <div class="macro-card">
+      <h4>Carnes <span>15 ítems</span></h4>
+      <ul>
+        <li>Terrestres: Bovine, Mutton/Goat, Pig, Poultry, Horse, Offals, Game</li>
+        <li>Acuáticos: Freshwater, Demersal, Pelagic, Marine Other, Crustaceans, Cephalopods, Molluscs</li>
+      </ul>
+    </div>
+    <div class="macro-card">
+      <h4>Lácteos_Huevos <span>12 ítems</span></h4>
+      <ul>
+        <li>Milk (Excl. Butter), Eggs</li>
+        <li>Cow/Buffalo/Goat/Sheep milk (fresh)</li>
+        <li>Dried milk, Skimmed dried, Evaporated</li>
+        <li>Cheese, Cream, Whey</li>
+      </ul>
+      <div class="fix-note">★ Fix S2: eliminados de ITEMS_AGREGADOS → pct_ 0.3%→14.9%</div>
+    </div>
+    <div class="macro-card" style="grid-column: span 2;">
+      <h4>Frutas_Verduras <span>28 ítems</span></h4>
+      <ul style="columns: 2; gap: 20px;">
+        <li>Verduras: Tomatoes, Onions, Vegetables Other</li>
+        <li>Cítricos: Oranges, Lemons, Grapefruit, Citrus Other</li>
+        <li>Frutas: Bananas, Apples, Pineapples, Dates, Grapes, Mangoes, Papayas, Fruits Other, Wine</li>
+        <li>Legumbres: Beans, Peas, Lentils, Chickpeas, Pulses Other, Groundnuts (Shell)</li>
+        <li>Frutos secos: Nuts, Cashewnuts, Almonds</li>
+        <li>Estimulantes: Coffee, Tea, Cocoa, Spices Other, Pepper, Pimento</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ITEMS AGREGADOS -->
+  <div class="section-label">ITEMS_AGREGADOS — exclusiones por doble conteo (33 entradas)</div>
+  <div class="warn">
+    <strong>Regla crítica — no revertir:</strong> estos ítems son subtotales del FBS que ya incluyen a los ítems hoja. Incluirlos produce doble conteo (ejemplo: Irlanda → 15.000 kcal/día artificiales). Los comentados con <code># Fix Sesión 2</code> fueron eliminados porque resultaron ser ítems hoja únicos, no agregados.
+  </div>
+
+  <!-- CÓDIGO -->
+  <div class="section-label">Código fuente completo</div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="filename">mapeo_fao_completo.py</span>
+      <span>Python 3 · 250 líneas · Producción</span>
+    </div>
+    <div class="code-body"><pre><span class="cm"># -*- coding: utf-8 -*-</span>
+<span class="cm">"""
+mapeo_fao_completo.py
+=====================
+Diccionario de mapeo: 87 ítems hoja FBS → 7 macrocategorías.
+
+SESIÓN 2 — 03/04/2026
+Completado el mapeo completo de los 87 ítems leaf del FBS.
+El prototipo de la Sesión 1 tenía ~15 ítems; este archivo cubre la totalidad.
+
+USO:
+    from mapeo_fao_completo import MAPEO_FAO, ITEMS_AGREGADOS, MACRO_COLS
+    df['Macro_Grupo'] = df['Item'].map(MAPEO_FAO)
+
+CATEGORÍAS:
+    1. Cereales          — base energética de granos
+    2. Tuberculos        — raíces y tubérculos
+    3. Azucares          — azúcares y edulcorantes
+    4. Aceites_Grasas    — aceites vegetales, grasas animales, semillas oleaginosas
+    5. Carnes            — carnes, pescado, mariscos, despojos
+    6. Lacteos_Huevos    — lácteos y huevos
+    7. Frutas_Verduras   — frutas, verduras, legumbres, frutos secos, estimulantes
+"""</span>
+
+<span class="cm"># ─────────────────────────────────────────────────────────────
+# 1. ÍTEMS AGREGADOS — EXCLUIR SIEMPRE (doble conteo)
+# Estos ítems son subtotales que ya incluyen los ítems hoja.
+# Incluirlos produce doble conteo (Irlanda → 15.000 kcal/día).
+# ─────────────────────────────────────────────────────────────</span>
+ITEMS_AGREGADOS = {
+    <span class="st">'Grand Total'</span>,
+    <span class="st">'Vegetal Products'</span>,
+    <span class="st">'Animal Products'</span>,
+    <span class="st">'Cereals - Excluding Beer'</span>,
+    <span class="st">'Starchy Roots'</span>,
+    <span class="st">'Sugar &amp; Sweeteners'</span>,
+    <span class="st">'Pulses'</span>,
+    <span class="st">'Treenuts'</span>,
+    <span class="st">'Oilcrops'</span>,
+    <span class="st">'Vegetables'</span>,
+    <span class="st">'Fruits - Excluding Wine'</span>,
+    <span class="st">'Stimulants'</span>,
+    <span class="st">'Spices'</span>,
+    <span class="st">'Alcoholic Beverages'</span>,
+    <span class="st">'Meat'</span>,
+    <span class="cm"># 'Offals',       # Fix Sesión 2: puede ser el único ítem de despojos en FBS</span>
+    <span class="st">'Animal fats'</span>,
+    <span class="st">'Aquatic Products, Other'</span>,
+    <span class="cm"># 'Eggs',                    # Fix Sesión 2: ítem hoja único de huevos en FBS normalizado</span>
+    <span class="cm"># 'Milk - Excluding Butter', # Fix Sesión 2: ítem hoja único de leche en FBS normalizado</span>
+    <span class="st">'Fish, Seafood'</span>,
+    <span class="st">'Vegetable Oils'</span>,
+    <span class="st">'Miscellaneous'</span>,
+    <span class="st">'Oilcrops Oil, Other'</span>,
+    <span class="st">'Vegetables, other'</span>,
+    <span class="st">'Fruits, other'</span>,
+    <span class="st">'Sweeteners, other'</span>,
+    <span class="st">'Roots, other'</span>,
+    <span class="st">'Cereals, other'</span>,
+    <span class="st">'Meat, other'</span>,
+    <span class="st">'Aquatic Animals, Others'</span>,
+    <span class="st">'Fish, Body Oil'</span>,
+    <span class="st">'Fish, Liver Oil'</span>,
+}
+
+<span class="cm"># ─────────────────────────────────────────────────────────────
+# 2. MAPEO 87 ÍTEMS HOJA → 7 MACROCATEGORÍAS
+# ─────────────────────────────────────────────────────────────</span>
+MAPEO_FAO = {
+
+    <span class="cm"># ── CEREALES (14 ítems) ──────────────────────────────────────
+    # Base energética de granos. Primer grupo por volumen de kcal
+    # en la mayoría de países del mundo.</span>
+    <span class="st">'Wheat and products'</span>:        <span class="cat">'Cereales'</span>,
+    <span class="st">'Rice and products'</span>:         <span class="cat">'Cereales'</span>,
+    <span class="st">'Barley and products'</span>:       <span class="cat">'Cereales'</span>,
+    <span class="st">'Maize and products'</span>:        <span class="cat">'Cereales'</span>,
+    <span class="st">'Rye and products'</span>:          <span class="cat">'Cereales'</span>,
+    <span class="st">'Oats'</span>:                      <span class="cat">'Cereales'</span>,
+    <span class="st">'Millet and products'</span>:       <span class="cat">'Cereales'</span>,
+    <span class="st">'Sorghum and products'</span>:      <span class="cat">'Cereales'</span>,
+    <span class="st">'Cereals, Other'</span>:            <span class="cat">'Cereales'</span>,
+    <span class="st">'Triticale'</span>:                 <span class="cat">'Cereales'</span>,
+    <span class="st">'Buckwheat'</span>:                 <span class="cat">'Cereales'</span>,
+    <span class="st">'Fonio'</span>:                     <span class="cat">'Cereales'</span>,
+    <span class="st">'Quinoa'</span>:                    <span class="cat">'Cereales'</span>,
+    <span class="st">'Beer'</span>:                      <span class="cat">'Cereales'</span>,  <span class="cm"># fermentado de cebada — kcal reales</span>
+
+    <span class="cm"># ── TUBÉRCULOS (6 ítems) ─────────────────────────────────────
+    # Raíces y tubérculos. Base calórica alternativa a cereales,
+    # especialmente relevante en África subsahariana y Latinoamérica.</span>
+    <span class="st">'Potatoes and products'</span>:     <span class="cat">'Tuberculos'</span>,
+    <span class="st">'Sweet potatoes'</span>:            <span class="cat">'Tuberculos'</span>,
+    <span class="st">'Cassava and products'</span>:      <span class="cat">'Tuberculos'</span>,
+    <span class="st">'Yams'</span>:                      <span class="cat">'Tuberculos'</span>,
+    <span class="st">'Roots, Other'</span>:              <span class="cat">'Tuberculos'</span>,
+    <span class="st">'Plantains'</span>:                 <span class="cat">'Tuberculos'</span>,  <span class="cm"># plátano macho, consumo como tubérculo</span>
+
+    <span class="cm"># ── AZÚCARES (6 ítems) ───────────────────────────────────────
+    # Azúcares y edulcorantes. Marcador de dieta procesada/occidental.</span>
+    <span class="st">'Sugar cane'</span>:                <span class="cat">'Azucares'</span>,
+    <span class="st">'Sugar beet'</span>:                <span class="cat">'Azucares'</span>,
+    <span class="st">'Sugar (Raw Equivalent)'</span>:    <span class="cat">'Azucares'</span>,
+    <span class="st">'Sugar non-centrifugal'</span>:     <span class="cat">'Azucares'</span>,
+    <span class="st">'Sweeteners, Other'</span>:         <span class="cat">'Azucares'</span>,
+    <span class="st">'Honey'</span>:                     <span class="cat">'Azucares'</span>,
+
+    <span class="cm"># ── ACEITES Y GRASAS (23 ítems) ──────────────────────────────
+    # Semillas oleaginosas:</span>
+    <span class="st">'Soyabeans'</span>:                 <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Groundnuts (Shelled Eq)'</span>:   <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Sunflower seed'</span>:            <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Rape and Mustard seed'</span>:     <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Cottonseed'</span>:                <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Sesame seed'</span>:               <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Oilcrops, Other'</span>:           <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Palm kernels'</span>:              <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Coconuts - Incl Copra'</span>:     <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Olives (including preserved)'</span>: <span class="cat">'Aceites_Grasas'</span>,
+    <span class="cm">    # Aceites refinados:</span>
+    <span class="st">'Soyabean Oil'</span>:              <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Groundnut Oil'</span>:             <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Sunflower seed Oil'</span>:        <span class="cat">'Aceites_Grasas'</span>,  <span class="cm"># nombre alternativo</span>
+    <span class="st">'Sunflowerseed Oil'</span>:         <span class="cat">'Aceites_Grasas'</span>,  <span class="cm"># Fix Sesión 2: nombre real en FBS normalizado</span>
+    <span class="st">'Rape and Mustard Oil'</span>:      <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Cottonseed Oil'</span>:            <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Palm Oil'</span>:                  <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Sesame seed Oil'</span>:           <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Olive Oil'</span>:                 <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Coconut Oil'</span>:               <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Palm kernel Oil'</span>:           <span class="cat">'Aceites_Grasas'</span>,
+    <span class="cm">    # Grasas animales:</span>
+    <span class="st">'Butter, Ghee'</span>:              <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Lard'</span>:                      <span class="cat">'Aceites_Grasas'</span>,
+    <span class="st">'Tallow'</span>:                    <span class="cat">'Aceites_Grasas'</span>,
+
+    <span class="cm"># ── CARNES (15 ítems) ────────────────────────────────────────
+    # Carnes terrestres, pescado, mariscos, despojos.
+    # Mayor huella de CO2 por kcal de todos los grupos.</span>
+    <span class="st">'Bovine Meat'</span>:               <span class="cat">'Carnes'</span>,
+    <span class="st">'Mutton &amp; Goat Meat'</span>:        <span class="cat">'Carnes'</span>,
+    <span class="st">'Pigmeat'</span>:                   <span class="cat">'Carnes'</span>,
+    <span class="st">'Poultry Meat'</span>:              <span class="cat">'Carnes'</span>,
+    <span class="st">'Meat, Other'</span>:               <span class="cat">'Carnes'</span>,
+    <span class="st">'Horse Meat'</span>:                <span class="cat">'Carnes'</span>,
+    <span class="st">'Offals, Edible'</span>:            <span class="cat">'Carnes'</span>,
+    <span class="st">'Game meat'</span>:                 <span class="cat">'Carnes'</span>,
+    <span class="st">'Freshwater Fish'</span>:           <span class="cat">'Carnes'</span>,
+    <span class="st">'Demersal Fish'</span>:             <span class="cat">'Carnes'</span>,
+    <span class="st">'Pelagic Fish'</span>:              <span class="cat">'Carnes'</span>,
+    <span class="st">'Marine Fish, Other'</span>:        <span class="cat">'Carnes'</span>,
+    <span class="st">'Crustaceans'</span>:               <span class="cat">'Carnes'</span>,
+    <span class="st">'Cephalopods'</span>:               <span class="cat">'Carnes'</span>,
+    <span class="st">'Molluscs, Other'</span>:           <span class="cat">'Carnes'</span>,
+
+    <span class="cm"># ── LÁCTEOS Y HUEVOS (12 ítems) ──────────────────────────────
+    # Fix Sesión 2: 'Milk - Excluding Butter' y 'Eggs' eliminados de
+    # ITEMS_AGREGADOS — son los únicos ítems hoja de lácteos/huevos
+    # en el FBS normalizado. Excluirlos → pct_Lacteos_Huevos = 0.3%
+    # (debería ser ~10-15%). Post-fix: media = 14.9% ✅</span>
+    <span class="st">'Milk - Excluding Butter'</span>:   <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Eggs'</span>:                      <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Milk, Whole Fresh Cow'</span>:      <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Milk, Whole Fresh Buffaloes'</span>: <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Milk, Whole Fresh Goats'</span>:    <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Milk, Whole Fresh Sheep'</span>:    <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Milk, Whole Dried'</span>:          <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Milk, Skimmed Dried'</span>:        <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Evaporated &amp; Condensed Milk'</span>: <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Cheese'</span>:                    <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Cream'</span>:                     <span class="cat">'Lacteos_Huevos'</span>,
+    <span class="st">'Whey'</span>:                      <span class="cat">'Lacteos_Huevos'</span>,
+
+    <span class="cm"># ── FRUTAS Y VERDURAS (28 ítems) ─────────────────────────────
+    # Frutas, verduras, legumbres, frutos secos, estimulantes.
+    # Alta densidad nutricional, baja huella de CO2.</span>
+    <span class="st">'Tomatoes and products'</span>:     <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Onions'</span>:                    <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Vegetables, Other'</span>:         <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Oranges, Mandarines'</span>:       <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Lemons, Limes and products'</span>: <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Grapefruit and products'</span>:   <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Citrus, Other'</span>:             <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Bananas'</span>:                   <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Apples and products'</span>:       <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Pineapples and products'</span>:   <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Dates'</span>:                     <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Grapes and products (excl wine)'</span>: <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Fruits, Other'</span>:             <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Mangoes'</span>:                   <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Papayas'</span>:                   <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Wine'</span>:                      <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Beans'</span>:                     <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Peas'</span>:                      <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Pulses, Other'</span>:             <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Lentils'</span>:                   <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Chickpeas'</span>:                 <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Groundnuts (in Shell Eq)'</span>:   <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Nuts and products'</span>:         <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Cashewnuts'</span>:                <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Almonds, with shell'</span>:        <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Coffee and products'</span>:       <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Tea (including mate)'</span>:       <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Cocoa Beans and products'</span>:   <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Spices, Other'</span>:             <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Pepper'</span>:                    <span class="cat">'Frutas_Verduras'</span>,
+    <span class="st">'Pimento'</span>:                   <span class="cat">'Frutas_Verduras'</span>,
+}
+
+<span class="cm"># ─────────────────────────────────────────────────────────────
+# 3. COLUMNAS DE MACROCATEGORÍAS (orden estándar del proyecto)
+# ─────────────────────────────────────────────────────────────</span>
+MACRO_COLS = [
+    <span class="st">'Cereales'</span>, <span class="st">'Tuberculos'</span>, <span class="st">'Azucares'</span>,
+    <span class="st">'Aceites_Grasas'</span>, <span class="st">'Carnes'</span>, <span class="st">'Lacteos_Huevos'</span>, <span class="st">'Frutas_Verduras'</span>,
+]
+
+<span class="cm"># ─────────────────────────────────────────────────────────────
+# 4. VALIDACIÓN (se ejecuta al importar)
+# ─────────────────────────────────────────────────────────────</span>
+_categorias_validas = <span class="bi">set</span>(MACRO_COLS)
+_errores = [
+    (item, cat) <span class="kw">for</span> item, cat <span class="kw">in</span> MAPEO_FAO.items()
+    <span class="kw">if</span> cat <span class="kw">not in</span> _categorias_validas
+]
+<span class="kw">if</span> _errores:
+    <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="st">f"[mapeo_fao_completo] Categorías inválidas: {_errores}"</span>)
+
+<span class="bi">print</span>(<span class="st">f"[mapeo_fao_completo] ✅ {len(MAPEO_FAO)} ítems mapeados a {len(_categorias_validas)} categorías."</span>)
+<span class="kw">from</span> collections <span class="kw">import</span> Counter
+dist = <span class="fn">Counter</span>(MAPEO_FAO.values())
+<span class="kw">for</span> cat <span class="kw">in</span> MACRO_COLS:
+    <span class="bi">print</span>(<span class="st">f"  {cat:&lt;20} {dist[cat]:&gt;3} ítems"</span>)</pre>
+    </div>
+  </div>
+
+  <div class="footer">
+    Aguacate Team · TFM "La Dieta de un País" · Nuclio Digital School · Madrid 2026
+  </div>
+
+</div>
+</body>
+</html>

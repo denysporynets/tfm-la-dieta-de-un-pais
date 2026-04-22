@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>00_descarga_faostat.py — Aguacate Team · TFM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f5f6fa;
+      color: #1a1a2e;
+      padding: 40px 20px;
+    }
+    .container { max-width: 860px; margin: 0 auto; }
+
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 28px 36px;
+      margin-bottom: 24px;
+    }
+    .header .tag {
+      display: inline-block;
+      background: #f0a500;
+      color: #1a1a2e;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .header h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+    .header .subtitle { font-size: 0.82rem; opacity: 0.65; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .meta-card {
+      background: white;
+      border-radius: 8px;
+      padding: 14px 18px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      font-size: 0.83rem;
+    }
+    .meta-card .lbl { color: #888; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .meta-card .val { font-weight: 700; color: #1a1a2e; }
+
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #888;
+      margin: 28px 0 10px 0;
+    }
+
+    /* DATASETS */
+    .dataset-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 18px 22px;
+      margin-bottom: 12px;
+      border-left: 4px solid #f0a500;
+    }
+    .dataset-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; }
+    .dataset-card table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .dataset-card td { padding: 4px 8px; vertical-align: top; }
+    .dataset-card td:first-child { color: #888; width: 90px; flex-shrink: 0; }
+    .dataset-card code {
+      font-family: 'Courier New', monospace;
+      background: #f5f5f5;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      word-break: break-all;
+    }
+
+    /* CÓDIGO */
+    .code-block {
+      background: #1a1a2e;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .code-header {
+      background: #16213e;
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: #aaa;
+      border-bottom: 1px solid #2a2a4a;
+    }
+    .code-header .filename { color: #f0a500; font-weight: 700; font-family: 'Courier New', monospace; }
+    .code-body {
+      padding: 20px 22px;
+      overflow-x: auto;
+    }
+    pre {
+      font-family: 'Courier New', 'Fira Code', monospace;
+      font-size: 0.83rem;
+      line-height: 1.7;
+      color: #e0e0e0;
+      white-space: pre;
+    }
+    /* Syntax highlighting manual */
+    .kw { color: #c792ea; }       /* keywords */
+    .fn { color: #82aaff; }       /* functions */
+    .st { color: #c3e88d; }       /* strings */
+    .cm { color: #546e7a; font-style: italic; } /* comments */
+    .nm { color: #f78c6c; }       /* numbers */
+    .bi { color: #ffcb6b; }       /* builtins */
+
+    /* LÓGICA */
+    .logic-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 20px 24px;
+      margin-bottom: 12px;
+    }
+    .logic-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: #1a1a2e; }
+    .step { display: flex; gap: 12px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.6; }
+    .step-num {
+      background: #1a1a2e;
+      color: #f0a500;
+      font-weight: 700;
+      font-size: 0.72rem;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .highlight {
+      background: #fefce8;
+      border-left: 3px solid #f0a500;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 0.83rem;
+      line-height: 1.65;
+      color: #555;
+      margin-top: 14px;
+    }
+    .highlight strong { color: #b45309; }
+
+    .footer {
+      text-align: center;
+      font-size: 0.72rem;
+      color: #aaa;
+      margin-top: 32px;
+      padding-top: 14px;
+      border-top: 1px solid #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="tag">Script de descarga · Etapa 0</div>
+    <h1>00_descarga_faostat.py</h1>
+    <div class="subtitle">Descarga automática de los 3 datasets FAOSTAT · Aguacate Team · TFM "La Dieta de un País" · 2026</div>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-card">
+      <div class="lbl">Tipo</div>
+      <div class="val">Script Python (idempotente)</div>
+    </div>
+    <div class="meta-card">
+      <div class="lbl">Output</div>
+      <div class="val"><code>raw/</code> — 3 CSVs</div>
+    </div>
+    <div class="meta-card">
+      <div class="lbl">Tamaño total descarga</div>
+      <div class="val">~986 MB</div>
+    </div>
+    <div class="meta-card">
+      <div class="lbl">Estado</div>
+      <div class="val" style="color:#15803d;">✅ Ejecutado</div>
+    </div>
+  </div>
+
+  <!-- DATASETS -->
+  <div class="section-label">Datasets descargados</div>
+
+  <div class="dataset-card">
+    <h3>1 — Food Balance Sheets (FBS)</h3>
+    <table>
+      <tr><td>Eje</td><td><strong>Nutrición</strong> — Dietary Energy Supply (kcal/cápita/día)</td></tr>
+      <tr><td>Destino</td><td><code>raw/fbs_raw.csv</code> — 604 MB</td></tr>
+      <tr><td>ZIP</td><td><code>FoodBalanceSheets_E_All_Data_(Normalized).zip</code></td></tr>
+      <tr><td>URL</td><td><code>bulks-faostat.fao.org/production/FoodBalanceSheets_E_All_Data_(Normalized).zip</code></td></tr>
+    </table>
+  </div>
+
+  <div class="dataset-card">
+    <h3>2 — Emissions Agrifood System</h3>
+    <table>
+      <tr><td>Eje</td><td><strong>Clima</strong> — CO₂eq toneladas/cápita/año del sistema agroalimentario</td></tr>
+      <tr><td>Destino</td><td><code>raw/emissions_raw.csv</code> — 347 MB</td></tr>
+      <tr><td>ZIP</td><td><code>Emissions_Totals_E_All_Data_(Normalized).zip</code></td></tr>
+      <tr><td>URL</td><td><code>bulks-faostat.fao.org/production/Emissions_Totals_E_All_Data_(Normalized).zip</code></td></tr>
+    </table>
+  </div>
+
+  <div class="dataset-card">
+    <h3>3 — Consumer Price Indices (Food CPI)</h3>
+    <table>
+      <tr><td>Eje</td><td><strong>Coste</strong> — Índice de precios alimentarios por país (base 2015=100)</td></tr>
+      <tr><td>Destino</td><td><code>raw/cpi_raw.csv</code> — 35.5 MB</td></tr>
+      <tr><td>ZIP</td><td><code>ConsumerPriceIndices_E_All_Data_(Normalized).zip</code></td></tr>
+      <tr><td>URL</td><td><code>bulks-faostat.fao.org/production/ConsumerPriceIndices_E_All_Data_(Normalized).zip</code></td></tr>
+    </table>
+  </div>
+
+  <!-- LÓGICA -->
+  <div class="section-label">Lógica de ejecución</div>
+
+  <div class="logic-card">
+    <h3>Función <code>descargar(dataset)</code> — flujo por dataset</h3>
+    <div class="step"><div class="step-num">1</div><div><strong>Idempotencia:</strong> si el CSV destino ya existe en <code>raw/</code>, lo omite sin re-descargar. El script es re-ejecutable sin efectos secundarios.</div></div>
+    <div class="step"><div class="step-num">2</div><div><strong>Descarga en streaming</strong> con chunks de 64 KB (<code>stream=True</code>) para no cargar el ZIP completo en RAM. Muestra progreso en porcentaje.</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>Extracción ZIP en memoria</strong> — el ZIP se descomprime desde <code>io.BytesIO</code> sin escribir el ZIP en disco. Solo se escribe el CSV final.</div></div>
+    <div class="step"><div class="step-num">4</div><div><strong>Búsqueda flexible del CSV</strong> dentro del ZIP — busca por nombre exacto o por extensión <code>.csv</code> como fallback, por si FAOSTAT cambia la estructura interna del ZIP.</div></div>
+    <div class="step"><div class="step-num">5</div><div><strong>Manejo de errores</strong> — captura <code>RequestException</code> (red) y <code>BadZipFile</code> (descarga corrupta) por separado. Devuelve <code>True/False</code> por dataset.</div></div>
+    <div class="step"><div class="step-num">6</div><div><strong>Resumen final</strong> — imprime estado de cada dataset (✓ / ✗ FALLO) tras procesar los tres.</div></div>
+    <div class="highlight">
+      <strong>Cómo re-ejecutar:</strong> <code>python notebooks/00_descarga_faostat.py</code> desde la raíz del proyecto. Si los 3 CSVs ya existen, termina en segundos sin tocar nada. Si alguno falta, lo descarga solo.
+    </div>
+  </div>
+
+  <!-- CÓDIGO -->
+  <div class="section-label">Código fuente completo</div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="filename">00_descarga_faostat.py</span>
+      <span>Python 3 · 110 líneas</span>
+    </div>
+    <div class="code-body"><pre><span class="cm"># -*- coding: utf-8 -*-</span>
+<span class="cm">"""
+00_descarga_faostat.py
+Descarga automática de los 3 datasets FAOSTAT para el TFM "La Dieta de un País"
+Aguacate Team · 2026
+"""</span>
+
+<span class="kw">import</span> requests
+<span class="kw">import</span> zipfile
+<span class="kw">import</span> io
+<span class="kw">import</span> os
+
+RAW_DIR = os.<span class="fn">path</span>.<span class="fn">join</span>(os.<span class="fn">path</span>.<span class="fn">dirname</span>(__file__), <span class="st">'..'</span>, <span class="st">'raw'</span>)
+os.<span class="fn">makedirs</span>(RAW_DIR, exist_ok=<span class="bi">True</span>)
+
+DATASETS = [
+    {
+        <span class="st">"nombre"</span>: <span class="st">"Food Balance Sheets"</span>,
+        <span class="st">"url"</span>: <span class="st">"https://bulks-faostat.fao.org/production/FoodBalanceSheets_E_All_Data_(Normalized).zip"</span>,
+        <span class="st">"archivo_zip"</span>: <span class="st">"FoodBalanceSheets_E_All_Data_(Normalized).csv"</span>,
+        <span class="st">"destino"</span>: <span class="st">"fbs_raw.csv"</span>
+    },
+    {
+        <span class="st">"nombre"</span>: <span class="st">"Emissions Agrifood System"</span>,
+        <span class="st">"url"</span>: <span class="st">"https://bulks-faostat.fao.org/production/Emissions_Totals_E_All_Data_(Normalized).zip"</span>,
+        <span class="st">"archivo_zip"</span>: <span class="st">"Emissions_Totals_E_All_Data_(Normalized).csv"</span>,
+        <span class="st">"destino"</span>: <span class="st">"emissions_raw.csv"</span>
+    },
+    {
+        <span class="st">"nombre"</span>: <span class="st">"Consumer Price Indices (Food CPI)"</span>,
+        <span class="st">"url"</span>: <span class="st">"https://bulks-faostat.fao.org/production/ConsumerPriceIndices_E_All_Data_(Normalized).zip"</span>,
+        <span class="st">"archivo_zip"</span>: <span class="st">"ConsumerPriceIndices_E_All_Data_(Normalized).csv"</span>,
+        <span class="st">"destino"</span>: <span class="st">"cpi_raw.csv"</span>
+    }
+]
+
+<span class="kw">def</span> <span class="fn">descargar</span>(dataset):
+    nombre  = dataset[<span class="st">"nombre"</span>]
+    url     = dataset[<span class="st">"url"</span>]
+    destino = os.<span class="fn">path</span>.<span class="fn">join</span>(RAW_DIR, dataset[<span class="st">"destino"</span>])
+
+    <span class="kw">if</span> os.<span class="fn">path</span>.<span class="fn">exists</span>(destino):
+        size_mb = os.<span class="fn">path</span>.<span class="fn">getsize</span>(destino) / <span class="nm">1_048_576</span>
+        <span class="bi">print</span>(<span class="st">f"[✓] {nombre} ya existe ({size_mb:.1f} MB) — omitiendo."</span>)
+        <span class="kw">return</span> <span class="bi">True</span>
+
+    <span class="bi">print</span>(<span class="st">f"\n[→] Descargando: {nombre}"</span>)
+    <span class="bi">print</span>(<span class="st">f"    URL: {url}"</span>)
+
+    <span class="kw">try</span>:
+        r = requests.<span class="fn">get</span>(url, timeout=<span class="nm">120</span>, stream=<span class="bi">True</span>)
+        r.<span class="fn">raise_for_status</span>()
+
+        total      = <span class="bi">int</span>(r.headers.<span class="fn">get</span>(<span class="st">'content-length'</span>, <span class="nm">0</span>))
+        descargado = <span class="nm">0</span>
+        chunks     = []
+
+        <span class="kw">for</span> chunk <span class="kw">in</span> r.<span class="fn">iter_content</span>(chunk_size=<span class="nm">65536</span>):
+            chunks.<span class="fn">append</span>(chunk)
+            descargado += <span class="bi">len</span>(chunk)
+            <span class="kw">if</span> total:
+                pct = descargado / total * <span class="nm">100</span>
+                <span class="bi">print</span>(<span class="st">f"\r    Progreso: {pct:.1f}% ({descargado/1_048_576:.1f} MB)"</span>, end=<span class="st">''</span>, flush=<span class="bi">True</span>)
+
+        <span class="bi">print</span>()
+        contenido = <span class="st">b''</span>.<span class="fn">join</span>(chunks)
+
+        <span class="kw">with</span> zipfile.<span class="fn">ZipFile</span>(io.<span class="fn">BytesIO</span>(contenido)) <span class="kw">as</span> z:
+            nombres = z.<span class="fn">namelist</span>()
+            <span class="bi">print</span>(<span class="st">f"    Archivos en ZIP: {nombres}"</span>)
+
+            <span class="cm"># Buscar el CSV correcto dentro del ZIP</span>
+            csv_target = dataset[<span class="st">"archivo_zip"</span>]
+            match = <span class="bi">next</span>((n <span class="kw">for</span> n <span class="kw">in</span> nombres <span class="kw">if</span> csv_target <span class="kw">in</span> n <span class="kw">or</span> n.<span class="fn">endswith</span>(<span class="st">'.csv'</span>)), <span class="bi">None</span>)
+
+            <span class="kw">if not</span> match:
+                <span class="bi">print</span>(<span class="st">f"[!] No se encontró CSV en el ZIP. Archivos: {nombres}"</span>)
+                <span class="kw">return</span> <span class="bi">False</span>
+
+            <span class="bi">print</span>(<span class="st">f"    Extrayendo: {match}"</span>)
+            <span class="kw">with</span> z.<span class="fn">open</span>(match) <span class="kw">as</span> f_in, <span class="bi">open</span>(destino, <span class="st">'wb'</span>) <span class="kw">as</span> f_out:
+                f_out.<span class="fn">write</span>(f_in.<span class="fn">read</span>())
+
+        size_mb = os.<span class="fn">path</span>.<span class="fn">getsize</span>(destino) / <span class="nm">1_048_576</span>
+        <span class="bi">print</span>(<span class="st">f"[✓] {nombre} guardado → raw/{dataset['destino']} ({size_mb:.1f} MB)"</span>)
+        <span class="kw">return</span> <span class="bi">True</span>
+
+    <span class="kw">except</span> requests.exceptions.<span class="fn">RequestException</span> <span class="kw">as</span> e:
+        <span class="bi">print</span>(<span class="st">f"[✗] Error descargando {nombre}: {e}"</span>)
+        <span class="kw">return</span> <span class="bi">False</span>
+    <span class="kw">except</span> zipfile.<span class="fn">BadZipFile</span> <span class="kw">as</span> e:
+        <span class="bi">print</span>(<span class="st">f"[✗] ZIP corrupto para {nombre}: {e}"</span>)
+        <span class="kw">return</span> <span class="bi">False</span>
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    <span class="bi">print</span>(<span class="st">"=" * 60</span>)
+    <span class="bi">print</span>(<span class="st">"FAOSTAT Downloader — Aguacate Team TFM 2026"</span>)
+    <span class="bi">print</span>(<span class="st">"=" * 60</span>)
+    resultados = []
+    <span class="kw">for</span> ds <span class="kw">in</span> DATASETS:
+        ok = <span class="fn">descargar</span>(ds)
+        resultados.<span class="fn">append</span>((ds[<span class="st">"nombre"</span>], ok))
+
+    <span class="bi">print</span>(<span class="st">"\n" + "=" * 60</span>)
+    <span class="bi">print</span>(<span class="st">"RESUMEN:"</span>)
+    <span class="kw">for</span> nombre, ok <span class="kw">in</span> resultados:
+        estado = <span class="st">"✓"</span> <span class="kw">if</span> ok <span class="kw">else</span> <span class="st">"✗ FALLO"</span>
+        <span class="bi">print</span>(<span class="st">f"  [{estado}] {nombre}"</span>)
+    <span class="bi">print</span>(<span class="st">"=" * 60</span>)</pre>
+    </div>
+  </div>
+
+  <div class="footer">
+    Aguacate Team · TFM "La Dieta de un País" · Nuclio Digital School · Madrid 2026
+  </div>
+
+</div>
+</body>
+</html>

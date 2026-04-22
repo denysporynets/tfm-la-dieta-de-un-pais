@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cálculo_de_dieta_por_país_normalización.py — Aguacate Team · TFM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f6fa; color: #1a1a2e; padding: 40px 20px; }
+    .container { max-width: 860px; margin: 0 auto; }
+    .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; border-radius: 12px; padding: 28px 36px; margin-bottom: 24px; }
+    .header .tag { display: inline-block; background: #f0a500; color: #1a1a2e; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .header h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+    .header .subtitle { font-size: 0.82rem; opacity: 0.65; }
+    .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .meta-card { background: white; border-radius: 8px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); font-size: 0.83rem; }
+    .meta-card .lbl { color: #888; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .meta-card .val { font-weight: 700; color: #1a1a2e; }
+    .section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin: 28px 0 10px 0; }
+    .logic-card { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px 24px; margin-bottom: 12px; }
+    .logic-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; }
+    .step { display: flex; gap: 12px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.6; }
+    .step-num { background: #1a1a2e; color: #f0a500; font-weight: 700; font-size: 0.72rem; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .highlight { background: #fefce8; border-left: 3px solid #f0a500; padding: 10px 14px; border-radius: 4px; font-size: 0.83rem; line-height: 1.65; color: #555; margin: 14px 0; }
+    .highlight strong { color: #b45309; }
+    .warn { background: #fff7ed; border-left: 3px solid #f97316; padding: 10px 14px; border-radius: 4px; font-size: 0.83rem; line-height: 1.65; color: #555; margin: 14px 0; }
+    .warn strong { color: #c2410c; }
+    .code-block { background: #1a1a2e; border-radius: 10px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .code-header { background: #16213e; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: #aaa; border-bottom: 1px solid #2a2a4a; }
+    .code-header .filename { color: #f0a500; font-weight: 700; font-family: 'Courier New', monospace; }
+    .code-body { padding: 20px 22px; overflow-x: auto; }
+    pre { font-family: 'Courier New', monospace; font-size: 0.83rem; line-height: 1.7; color: #e0e0e0; white-space: pre; }
+    .kw { color: #c792ea; } .fn { color: #82aaff; } .st { color: #c3e88d; } .cm { color: #546e7a; font-style: italic; } .nm { color: #f78c6c; } .bi { color: #ffcb6b; }
+    .footer { text-align: center; font-size: 0.72rem; color: #aaa; margin-top: 32px; padding-top: 14px; border-top: 1px solid #e0e0e0; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="tag">Script prototipo · Sesión 1</div>
+    <h1>cálculo_de_dieta_por_país_normalización.py</h1>
+    <div class="subtitle">Prototipo de vectorización dietaria — lógica de normalización composicional · Aguacate Team · TFM "La Dieta de un País" · 2026</div>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-card"><div class="lbl">Tipo</div><div class="val">Prototipo conceptual (Colab)</div></div>
+    <div class="meta-card"><div class="lbl">Origen</div><div class="val">Sesión 1 — 02/04/2026</div></div>
+    <div class="meta-card"><div class="lbl">Rol en el pipeline</div><div class="val">Precursor de nb02</div></div>
+    <div class="meta-card"><div class="lbl">Estado</div><div class="val" style="color:#b45309;">Superado por nb02</div></div>
+  </div>
+
+  <div class="highlight">
+    <strong>Contexto:</strong> Este script es el prototipo conceptual de la Sesión 1. Establece la lógica central de normalización (kcal absolutas → proporciones) y el pipeline de reducción dimensional (87 ítems → macrocategorías). Fue superado por <code>02_feature_engineering.ipynb</code>, que implementa el mapeo completo con los 87 ítems y los fixes de la Sesión 2. Se conserva como referencia de las decisiones de diseño originales.
+  </div>
+
+  <div class="section-label">Principio lógico central</div>
+  <div class="logic-card">
+    <h3>¿Por qué proporciones y no kcal absolutas?</h3>
+    <div class="step"><div class="step-num">→</div><div>Comparar kcal absolutas entre países introduce sesgo de tamaño: 1.000 kcal de carne en un país de 2.000 kcal/día es una dieta hipercarnívora (50%). En un país de 4.000 kcal/día, es moderada (25%).</div></div>
+    <div class="step"><div class="step-num">→</div><div>Al forzar que todas las proporciones sumen 1.0, normalizamos el espacio euclidiano. K-Means mide distancias reales de comportamiento dietario, no de volumen poblacional.</div></div>
+    <div class="step"><div class="step-num">→</div><div>La reducción de 87 variables a 7 macrocategorías elimina la maldición de la dimensionalidad y hace que el espacio de clustering sea interpretable.</div></div>
+  </div>
+
+  <div class="section-label">Pipeline implementado (6 pasos)</div>
+  <div class="logic-card">
+    <h3>Flujo de transformación</h3>
+    <div class="step"><div class="step-num">1</div><div><strong>Diccionario de mapeo:</strong> cada ítem FAO se asigna a una de las 7 macrocategorías. Lo que no está en el diccionario se descarta como ruido.</div></div>
+    <div class="step"><div class="step-num">2</div><div><strong>Ingesta estricta de RAM:</strong> dtypes explícitos (<code>category</code> para strings, <code>int16</code> para años, <code>float32</code> para valores). Solo se cargan las columnas necesarias.</div></div>
+    <div class="step"><div class="step-num">3</div><div><strong>Filtrado por elemento:</strong> solo se retienen filas con <code>Element == 'Food supply (kcal/capita/day)'</code>. Aplicación del mapeo y eliminación de NaN (ítems no mapeados).</div></div>
+    <div class="step"><div class="step-num">4</div><div><strong>Agrupación y pivote:</strong> <code>groupby(['Area', 'Year', 'Macro_Grupo'])</code> → suma de kcal → pivot para tener una columna por macrocategoría.</div></div>
+    <div class="step"><div class="step-num">5</div><div><strong>Normalización composicional:</strong> cada macrocategoría se divide por <code>Total_DES_Kcal</code>. Las 7 proporciones resultantes suman exactamente 1.0 por fila.</div></div>
+    <div class="step"><div class="step-num">6</div><div><strong>Persistencia y limpieza:</strong> export a parquet + <code>del</code> de dataframes intermedios + <code>gc.collect()</code>.</div></div>
+
+    <div class="warn">
+      <strong>Riesgo documentado — Fuga de categorías:</strong> si un ítem como "Pescado" no está en el diccionario de mapeo, el <code>Total_DES_Kcal</code> de países pesqueros se subestima y sus proporciones restantes se inflan artificialmente. Solución: antes de descartar NaN, verificar que los ítems no mapeados no superen 50 kcal/día históricamente (<code>df_raw[df_raw['Macro_Grupo'].isna()]['Item'].value_counts()</code>).
+    </div>
+    <div class="highlight">
+      <strong>Nota sobre varianza cero:</strong> si un país reporta 0 en Tubérculos (común en Europa del Este), el <code>fillna(0)</code> es correcto — no aplicar imputación de medias. Un 0 real es una señal válida para el clustering.
+    </div>
+  </div>
+
+  <div class="section-label">Código fuente completo</div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="filename">cálculo_de_dieta_por_país_normalización.py</span>
+      <span>Python 3 · Prototipo Sesión 1</span>
+    </div>
+    <div class="code-body"><pre><span class="cm"># -*- coding: utf-8 -*-</span>
+<span class="cm">"""Cálculo de Dieta por País: Normalización
+Prototipo conceptual — Sesión 1 (02/04/2026)
+Aguacate Team · TFM "La Dieta de un País"
+
+Nota: este script es el precursor de 02_feature_engineering.ipynb.
+El mapeo aquí es parcial (~15 ítems). El mapeo completo (87 ítems)
+está en mapeo_fao_completo.py
+"""</span>
+
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> gc
+
+<span class="cm"># 1. DICCIONARIO DE MAPEO (prototipo parcial ~15 ítems)</span>
+<span class="cm"># El mapeo completo (87 ítems) está en mapeo_fao_completo.py</span>
+mapeo_fao = {
+    <span class="st">'Wheat and products'</span>:    <span class="st">'Cereales'</span>,
+    <span class="st">'Rice and products'</span>:     <span class="st">'Cereales'</span>,
+    <span class="st">'Maize and products'</span>:    <span class="st">'Cereales'</span>,
+    <span class="st">'Bovine Meat'</span>:           <span class="st">'Carnes'</span>,
+    <span class="st">'Pigmeat'</span>:              <span class="st">'Carnes'</span>,
+    <span class="st">'Poultry Meat'</span>:          <span class="st">'Carnes'</span>,
+    <span class="st">'Mutton &amp; Goat Meat'</span>:    <span class="st">'Carnes'</span>,
+    <span class="st">'Milk - Excluding Butter'</span>: <span class="st">'Lacteos_Huevos'</span>,
+    <span class="st">'Eggs'</span>:                 <span class="st">'Lacteos_Huevos'</span>,
+    <span class="st">'Soyabean Oil'</span>:          <span class="st">'Aceites_Grasas'</span>,
+    <span class="st">'Palm Oil'</span>:             <span class="st">'Aceites_Grasas'</span>,
+    <span class="st">'Sugar cane'</span>:           <span class="st">'Azucares'</span>,
+    <span class="st">'Sugar beet'</span>:           <span class="st">'Azucares'</span>,
+    <span class="st">'Cassava and products'</span>:  <span class="st">'Tuberculos'</span>,
+    <span class="st">'Potatoes and products'</span>: <span class="st">'Tuberculos'</span>
+    <span class="cm"># ... (completado en mapeo_fao_completo.py)</span>
+}
+
+<span class="cm"># 2. INGESTA ESTRICTA (RAM is Money)</span>
+dtypes_fao = {
+    <span class="st">'Area'</span>:    <span class="st">'category'</span>,
+    <span class="st">'Year'</span>:    <span class="st">'int16'</span>,
+    <span class="st">'Item'</span>:    <span class="st">'category'</span>,
+    <span class="st">'Element'</span>: <span class="st">'category'</span>,
+    <span class="st">'Value'</span>:   <span class="st">'float32'</span>
+}
+<span class="cm"># df_raw = pd.read_csv('fao_data.csv', usecols=dtypes_fao.keys(), dtype=dtypes_fao)</span>
+
+<span class="cm"># 3. FILTRADO: solo Food supply (kcal/capita/day)</span>
+df_kcal = df_raw[df_raw[<span class="st">'Element'</span>] == <span class="st">'Food supply (kcal/capita/day)'</span>].<span class="fn">copy</span>()
+df_kcal[<span class="st">'Macro_Grupo'</span>] = df_kcal[<span class="st">'Item'</span>].<span class="fn">map</span>(mapeo_fao)
+df_kcal = df_kcal.<span class="fn">dropna</span>(subset=[<span class="st">'Macro_Grupo'</span>])
+
+<span class="cm"># 4. AGRUPACIÓN Y PIVOTE</span>
+df_grouped = df_kcal.<span class="fn">groupby</span>(
+    [<span class="st">'Area'</span>, <span class="st">'Year'</span>, <span class="st">'Macro_Grupo'</span>], observed=<span class="bi">True</span>
+)[<span class="st">'Value'</span>].<span class="fn">sum</span>().<span class="fn">reset_index</span>()
+
+df_vector = df_grouped.<span class="fn">pivot</span>(
+    index=[<span class="st">'Area'</span>, <span class="st">'Year'</span>],
+    columns=<span class="st">'Macro_Grupo'</span>,
+    values=<span class="st">'Value'</span>
+).<span class="fn">fillna</span>(<span class="nm">0</span>).<span class="fn">astype</span>(<span class="st">'float32'</span>)
+
+<span class="cm"># 5. NORMALIZACIÓN COMPOSICIONAL (el cálculo core)</span>
+df_vector[<span class="st">'Total_DES_Kcal'</span>] = df_vector.<span class="fn">sum</span>(axis=<span class="nm">1</span>)
+macro_cols = df_vector.columns.<span class="fn">drop</span>(<span class="st">'Total_DES_Kcal'</span>)
+<span class="kw">for</span> col <span class="kw">in</span> macro_cols:
+    df_vector[<span class="st">f'%_{col}'</span>] = (df_vector[col] / df_vector[<span class="st">'Total_DES_Kcal'</span>]).<span class="fn">astype</span>(<span class="st">'float32'</span>)
+
+<span class="cm"># Eliminar columnas absolutas (ya no necesarias para clustering)</span>
+df_vector = df_vector.<span class="fn">drop</span>(columns=macro_cols).<span class="fn">reset_index</span>()
+
+<span class="cm"># 6. PERSISTENCIA Y LIMPIEZA</span>
+df_vector.<span class="fn">to_parquet</span>(<span class="st">'data/processed/01_diet_vector_base.parquet'</span>)
+<span class="kw">del</span> df_raw, df_kcal, df_grouped, df_vector
+gc.<span class="fn">collect</span>()
+
+<span class="bi">print</span>(<span class="st">"--> Parsing Jerárquico completado. Vectores normalizados."</span>)</pre>
+    </div>
+  </div>
+
+  <div class="footer">
+    Aguacate Team · TFM "La Dieta de un País" · Nuclio Digital School · Madrid 2026
+  </div>
+
+</div>
+</body>
+</html>

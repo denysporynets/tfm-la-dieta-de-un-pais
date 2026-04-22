@@ -1,0 +1,44 @@
+# ── Documentación académica privada (no publicar antes de defensa) ──
+memoria/
+
+# ── Datos crudos (vacíos / no necesarios para deploy) ──
+raw/
+
+# ── Comunicaciones internas ──
+comunicaciones.html
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.python-version
+
+# ── Jupyter ──
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# ── macOS ──
+.DS_Store
+Icon
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# ── IDEs ──
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Streamlit cache (runtime) ──
+.streamlit/secrets.toml
+
+# ── Logs ──
+*.log
+logs/
