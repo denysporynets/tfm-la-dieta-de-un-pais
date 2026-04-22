@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>La Dieta de un País · TFM Aguacate Team · Nuclio 2026</title>
+<meta name="description" content="TFM Data Science — Triangulación nutrición × coste × clima con FAOSTAT · K-Means + LightGBM + SHAP + Forecast · Dashboard Streamlit" />
+<meta name="author" content="Aguacate Team: Rafael Montero, Marina Aguinacio, Ignacio Garrido, Denys Porynets" />
+<meta property="og:title" content="La Dieta de un País — TFM Aguacate Team" />
+<meta property="og:description" content="Tipologías dietarias globales, huella de carbono y simulación what-if · 30 países · 2010–2030" />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/style.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🥑%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+
+<!-- ══════════ NAV ══════════ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="https://denysporynets.github.io" class="nav-back">
+      <span>←</span> <span>Portfolio</span>
+    </a>
+    <div class="nav-links">
+      <a href="#motores">Motores</a>
+      <a href="#hallazgo">Hallazgo</a>
+      <a href="#tipologias">Tipologías</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="https://github.com/denysporynets/tfm-la-dieta-de-un-pais" class="nav-cta">Repo →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<header class="hero">
+  <div class="container">
+    <div class="reveal">
+      <div class="hero-eyebrow">Nuclio Digital School · Máster Data Science &amp; AI · Madrid 2026</div>
+      <h1>La Dieta <br/>de un País <span class="avocado">🥑</span></h1>
+      <p class="hero-sub">
+        Descubrimos las tipologías dietarias no evidentes de <b>30 países</b> y cuantificamos
+        su impacto en <b>CO₂</b>, triangulando tres dimensiones: <b>nutrición</b>, <b>coste</b> y <b>clima</b>.
+      </p>
+      <div class="pills">
+        <span class="pill"><span class="dot"></span> Nutrición · DES Kcal/cápita</span>
+        <span class="pill"><span class="dot"></span> Coste · Food CPI</span>
+        <span class="pill"><span class="dot"></span> Clima · CO₂eq AFOLU</span>
+      </div>
+      <div class="hero-cta">
+        <a href="https://avocados.streamlit.app" class="btn btn-primary" target="_blank" rel="noopener">
+          Abrir dashboard →
+        </a>
+        <a href="https://github.com/denysporynets/tfm-la-dieta-de-un-pais" class="btn btn-ghost" target="_blank" rel="noopener">
+          Ver repo en GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ 3 MOTORES ══════════ -->
+<section id="motores">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-eyebrow">Arquitectura analítica</div>
+      <h2 class="section-title">Tres motores, una pregunta</h2>
+      <p class="section-lead">
+        Cada motor ataca una dimensión distinta y sus salidas se triangulan en un único dashboard interactivo.
+      </p>
+    </div>
+
+    <div class="motor-grid">
+      <div class="motor-card motor-a reveal">
+        <div class="motor-label">Motor A · No supervisado</div>
+        <h3 class="motor-name">Clustering</h3>
+        <div class="motor-tech">K-Means · barrido K=3..6</div>
+        <div class="motor-metric" data-target="0.40">0.40</div>
+        <div class="motor-metric-lbl">Silhouette · K=3 · 98.7% estabilidad temporal</div>
+        <div class="motor-desc">
+          Sin pre-etiquetar dietas — el algoritmo descubre las <b>3 tipologías latentes</b>
+          a partir de la huella porcentual de 7 macrocategorías.
+        </div>
+      </div>
+
+      <div class="motor-card motor-b reveal">
+        <div class="motor-label">Motor B · Supervisado</div>
+        <h3 class="motor-name">Predictor CO₂</h3>
+        <div class="motor-tech">LightGBM + SHAP</div>
+        <div class="motor-metric" data-target="0.864">0.864</div>
+        <div class="motor-metric-lbl">R² 5-fold CV · vs baseline LinReg 0.29</div>
+        <div class="motor-desc">
+          <b>+57 puntos R²</b> sobre baseline. SHAP identifica 9 drivers interpretables
+          y reproduce la jerarquía IPCC sin conocimiento previo.
+        </div>
+      </div>
+
+      <div class="motor-card motor-c reveal">
+        <div class="motor-label">Motor C · Forecast</div>
+        <h3 class="motor-name">Proyección 2023–2030</h3>
+        <div class="motor-tech">LightGBM Global · lag features</div>
+        <div class="motor-metric" data-target="0.9943">0.9943</div>
+        <div class="motor-metric-lbl">R² walk-forward · MAE 0.0064</div>
+        <div class="motor-desc">
+          Forecast recursivo con intervalos de confianza por <b>quantile regression</b>.
+          Supera Prophet y SARIMAX en todas las métricas.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HALLAZGO ══════════ -->
+<section id="hallazgo" class="alt">
+  <div class="container">
+    <div class="finding">
+      <div class="finding-text reveal">
+        <div class="section-eyebrow">Hallazgo principal</div>
+        <h2 class="section-title">El modelo infiere la jerarquía IPCC sin verla</h2>
+        <blockquote>
+          Los 3 drivers principales del CO₂ descubiertos por SHAP — <b>Cereales</b>,
+          <b>Azúcares</b> y <b>Carnes</b> — coinciden con el orden de impacto climático
+          reportado por Poore &amp; Nemecek (2018, Science) para sistemas agroalimentarios.
+        </blockquote>
+        <p>
+          Sin anclar el modelo a conocimiento previo, LightGBM aprende que la composición
+          dietaria contiene por sí sola la señal completa: el <code>cluster_id</code> aporta
+          solo <b>0.04 |SHAP|</b> cuando ya están las 7 macrocategorías en el vector de entrada.
+        </p>
+        <p>
+          Esto valida el pipeline como método replicable: si dieras a otro equipo el mismo
+          dataset sin contarles nada de emisiones, llegarían a las mismas conclusiones.
+        </p>
+      </div>
+      <div class="finding-img reveal">
+        <img src="assets/img/shap-global.png" alt="SHAP global beeswarm — 9 drivers CO₂" loading="lazy" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ TIPOLOGÍAS ══════════ -->
+<section id="tipologias">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-eyebrow">Motor A · Resultado</div>
+      <h2 class="section-title">Las 3 tipologías dietarias descubiertas</h2>
+      <p class="section-lead">
+        Validadas por Silhouette = 0.40 y estabilidad temporal del 98.7% en 13 años.
+      </p>
+    </div>
+
+    <div class="cluster-grid">
+      <div class="cluster-card c0 reveal">
+        <div class="cluster-id">C0</div>
+        <h3 class="cluster-name">Proteica Diversificada</h3>
+        <div class="cluster-n"><b>18 países</b> · Europa, Américas, Oceanía</div>
+        <div class="cluster-centroid">
+          <span class="macro">Cereales 31%</span>
+          <span class="macro">Lácteos 20%</span>
+          <span class="macro">Carnes 12%</span>
+        </div>
+        <div class="cluster-countries">
+          España, Francia, Alemania, Italia, Polonia, Reino Unido, Rumanía, USA, Canadá,
+          Argentina, Brasil, México, Colombia, Australia, Arabia Saudí, Kazajistán, Marruecos, Egipto
+        </div>
+      </div>
+
+      <div class="cluster-card c1 reveal">
+        <div class="cluster-id">C1</div>
+        <h3 class="cluster-name">Tuberosa Subsahariana</h3>
+        <div class="cluster-n"><b>1 país</b> · hallazgo estructural (singleton)</div>
+        <div class="cluster-centroid">
+          <span class="macro">Cereales 45%</span>
+          <span class="macro">Tubérculos 28%</span>
+          <span class="macro">Frutas 8%</span>
+        </div>
+        <div class="cluster-countries">
+          <b>Nigeria</b> — único país del dataset con dieta dominada por yuca, ñame y batata.
+          No es ruido: su huella es distintiva y estable en toda la ventana 2010–2022.
+        </div>
+      </div>
+
+      <div class="cluster-card c2 reveal">
+        <div class="cluster-id">C2</div>
+        <h3 class="cluster-name">Cereal-Dependiente</h3>
+        <div class="cluster-n"><b>12 países</b> · Asia / África en desarrollo</div>
+        <div class="cluster-centroid">
+          <span class="macro">Cereales 60%</span>
+          <span class="macro">Aceites 9%</span>
+          <span class="macro">Frutas 7%</span>
+        </div>
+        <div class="cluster-countries">
+          China, India, Indonesia, Vietnam, Tailandia, Bangladesh, Pakistán, Corea del Sur,
+          Etiopía, Kenia, Senegal
+        </div>
+      </div>
+    </div>
+
+    <div class="cluster-special reveal">
+      <strong>Caso especial · Pakistán</strong> &nbsp;— único país del dataset con transición
+      dietaria documentada: migra de C2 a C0 desde 2016, correlacionado con crecimiento del PIB.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PIPELINE · STELLAR CHART ══════════ -->
+<section id="pipeline" class="alt">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-eyebrow">Pipeline completo</div>
+      <h2 class="section-title">La constelación del proyecto</h2>
+      <p class="section-lead">
+        Cada nodo es una pieza del pipeline; las líneas son el flujo de datos. Pasa el ratón
+        por encima para ver detalle. Eje horizontal = avance temporal del pipeline · eje vertical = naturaleza técnica.
+      </p>
+    </div>
+
+    <div class="stellar-wrap reveal">
+      <div class="stellar-canvas-holder">
+        <canvas id="stellarCanvas"></canvas>
+        <div class="stellar-tooltip" id="stellarTooltip">
+          <div class="tt-id"></div>
+          <div class="tt-name"></div>
+          <div class="tt-desc"></div>
+        </div>
+      </div>
+      <div class="stellar-legend">
+        <span><span class="lg-dot" style="background:#f4a261"></span>Origen</span>
+        <span><span class="lg-dot" style="background:#8fb88f"></span>Exploración / FE</span>
+        <span><span class="lg-dot" style="background:#2563eb"></span>Motor A</span>
+        <span><span class="lg-dot" style="background:#568259"></span>Motor B</span>
+        <span><span class="lg-dot" style="background:#a78bfa"></span>Motor C</span>
+        <span><span class="lg-dot" style="background:#ffd54f"></span>Destino</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<section id="dashboard">
+  <div class="container">
+    <div class="dashboard-showcase">
+      <div class="reveal">
+        <div class="section-eyebrow">Entregable interactivo</div>
+        <h2 class="section-title">Dashboard en vivo</h2>
+        <p class="section-lead">
+          Cinco vistas Streamlit con datos en vivo desde los parquets procesados y el modelo
+          <code>lgb_final.pkl</code> cargado en memoria.
+        </p>
+        <ul class="dashboard-features">
+          <li>
+            <span class="num">1</span>
+            <div><b>Vista País</b> — series temporales de las 7 macrocategorías + CO₂ + CPI (2010–2022)</div>
+          </li>
+          <li>
+            <span class="num">2</span>
+            <div><b>Comparador vectorial</b> — radar chart de hasta 4 países simultáneos</div>
+          </li>
+          <li>
+            <span class="num">3</span>
+            <div><b>Mapa clústeres</b> — choropleth mundial con slider temporal 2010–2022</div>
+          </li>
+          <li>
+            <span class="num">4</span>
+            <div><b>Simulador What-If</b> — 7 sliders (suman 100%) → predicción CO₂ en tiempo real</div>
+          </li>
+          <li>
+            <span class="num">5</span>
+            <div><b>Forecast 2023–2030</b> — Motor C con intervalos de confianza por quantile</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="qr-card reveal">
+        <img src="assets/img/qr-dashboard.png" alt="QR al dashboard Streamlit" />
+        <div class="qr-label">Escanea para abrir</div>
+        <div class="qr-url">avocados.streamlit.app</div>
+        <div class="qr-hint">Apunta con la cámara del móvil</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>Aguacate Team</h4>
+        <p style="margin:0 0 14px; color:#c5c5d0;">
+          TFM · Máster en Data Science &amp; AI · Nuclio Digital School · Madrid 2026
+        </p>
+        <p style="margin:0; color:#9898a8; font-size:0.82rem;">
+          Rafael Montero · Marina Aguinacio · Ignacio Garrido · Denys Porynets<br/>
+          Tutor: Pedro Costa del Amo
+        </p>
+      </div>
+      <div>
+        <h4>Enlaces</h4>
+        <ul>
+          <li><a href="https://avocados.streamlit.app" target="_blank" rel="noopener">Dashboard Streamlit</a></li>
+          <li><a href="https://github.com/denysporynets/tfm-la-dieta-de-un-pais" target="_blank" rel="noopener">Repositorio GitHub</a></li>
+          <li><a href="https://denysporynets.github.io" target="_blank" rel="noopener">← Portfolio principal</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Fuentes &amp; refs</h4>
+        <ul>
+          <li><a href="https://www.fao.org/faostat/en/#data/FBS" target="_blank" rel="noopener">FAOSTAT · Food Balance Sheets</a></li>
+          <li><a href="https://www.science.org/doi/10.1126/science.aaq0216" target="_blank" rel="noopener">Poore &amp; Nemecek (2018)</a></li>
+          <li><a href="https://lightgbm.readthedocs.io" target="_blank" rel="noopener">LightGBM · Ke et al. (2017)</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-copy">
+      © 2026 Aguacate Team · Datos FAOSTAT (FAO, 2023) · Modelo LightGBM · Interpretabilidad SHAP
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
