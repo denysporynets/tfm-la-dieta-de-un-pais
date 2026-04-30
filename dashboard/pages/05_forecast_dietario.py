@@ -6,6 +6,11 @@ from plotly.subplots import make_subplots
 import sys
 from pathlib import Path
 
+def hex_rgba(hex_color: str, alpha: float) -> str:
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 st.set_page_config(
@@ -111,7 +116,7 @@ with col_main:
                     x=list(fc_years) + list(fc_years[::-1]),
                     y=list(fc_upper) + list(fc_lower[::-1]),
                     fill='toself',
-                    fillcolor=color + '30',
+                    fillcolor=hex_rgba(color, 0.19),
                     line=dict(color='rgba(0,0,0,0)'),
                     showlegend=False,
                     hoverinfo='skip'

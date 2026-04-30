@@ -5,6 +5,7 @@
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import pandas as pd
 import sys
 from pathlib import Path
 
@@ -15,6 +16,56 @@ from utils import (
     CLUSTER_NAMES, CLUSTER_COLORS,
     dominant_macro,
 )
+
+# ── DATOS MACRO POR CLÚSTER (Marina Aguinacio, World Bank/OMS/FAO/PNUD/OCDE) ─
+MACRO_CLUSTER = {
+    0: {
+        "nombre": "Proteica Diversificada",
+        "n_paises": 17,
+        "pib_per_capita": "10 000 – 65 000 USD",
+        "gasto_comida_pct": "6 – 15 %",
+        "emisiones_alim_pct": "9 – 13 %",
+        "obesidad_pct": "20 – 36 %",
+        "esperanza_vida": "74 – 83 años",
+        "objetivo_inflacion": "~2 % (objetivo FMI/Banco Mundial)",
+        "nota": (
+            "Economías desarrolladas y emergentes avanzadas. Mayor diversidad dietaria "
+            "(lácteos, huevos, carnes). La Ley de Engel explica el bajo gasto relativo "
+            "en alimentación: a mayor renta, menor % del presupuesto destinado a comida."
+        ),
+    },
+    1: {
+        "nombre": "Tuberosa Subsahariana",
+        "n_paises": 1,
+        "pib_per_capita": "2 000 – 5 000 USD",
+        "gasto_comida_pct": "50 – 65 %",
+        "emisiones_alim_pct": "25 – 35 %",
+        "obesidad_pct": "8 – 22 %",
+        "esperanza_vida": "55 – 65 años",
+        "objetivo_inflacion": "Sin objetivo formal estable",
+        "nota": (
+            "Patrón dominado por tubérculos (ñame, yuca). Nigeria: mayor productor de "
+            "petróleo de África pero manufactura ~8 % PIB y sector terciario poco "
+            "desarrollado, lo que explica la persistencia de un patrón de subsistencia."
+        ),
+    },
+    2: {
+        "nombre": "Cereal-Dependiente",
+        "n_paises": 11,
+        "pib_per_capita": "1 500 – 12 000 USD",
+        "gasto_comida_pct": "35 – 50 %",
+        "emisiones_alim_pct": "13 – 16 %",
+        "obesidad_pct": "5 – 28 %",
+        "esperanza_vida": "65 – 77 años",
+        "objetivo_inflacion": "Variable (4 – 8 % en la mayoría)",
+        "nota": (
+            "Los países C2 priorizan cereales por bajos ingresos, tradición, clima, "
+            "geografía y subvenciones. El cereal es saciante y barato: lógica de "
+            "subsistencia antes que elección. Alta volatilidad del CPI, sensible a "
+            "shocks globales de precios agrícolas."
+        ),
+    },
+}
 
 st.set_page_config(page_title="Vista País · La Dieta de un País", page_icon="🌍", layout="wide")
 
@@ -132,6 +183,62 @@ with tab2:
         "El Food CPI es el índice de precios al consumidor de alimentos (base 2015=100)."
     )
 
+    # ── PENDIENTE 3: Volatilidad CPI contextualizada por clúster ──
+    cpi_series = sub["Food_CPI"].dropna()
+    if len(cpi_series) > 1:
+        cpi_cv   = cpi_series.std() / cpi_series.mean() * 100
+        cpi_max  = cpi_series.max()
+        cpi_min  = cpi_series.min()
+
+        mc = MACRO_CLUSTER[cluster_id]
+        objetivo = mc["objetivo_inflacion"]
+
+        if cluster_id == 0:
+            volatilidad_txt = (
+                f"**{pais}** pertenece al clúster de economías **{mc['nombre']}** (C0), "
+                f"cuyo objetivo de inflación alimentaria es {objetivo}. "
+                f"La volatilidad observada del Food CPI en el periodo es del **{cpi_cv:.1f} %** "
+                f"(rango: {cpi_min:.0f} – {cpi_max:.0f}). "
+                f"Picos por encima del objetivo suelen coincidir con shocks externos "
+                f"(ej. crisis 2008, guerra de Ucrania 2022)."
+            )
+            color_box = "#e8f0fe"
+            border_color = "#1a73e8"
+        elif cluster_id == 2:
+            volatilidad_txt = (
+                f"**{pais}** pertenece al clúster **{mc['nombre']}** (C2), "
+                f"con mayor sensibilidad a shocks globales de precios agrícolas. "
+                f"Volatilidad Food CPI observada: **{cpi_cv:.1f} %** "
+                f"(rango: {cpi_min:.0f} – {cpi_max:.0f}). "
+                f"Las economías C2 no tienen un objetivo formal estable; la inflación "
+                f"alimentaria afecta directamente al poder adquisitivo dado que el gasto "
+                f"en comida representa el {mc['gasto_comida_pct']} del presupuesto familiar."
+            )
+            color_box = "#fff3e0"
+            border_color = "#e67e22"
+        else:
+            volatilidad_txt = (
+                f"**{pais}** pertenece al clúster **{mc['nombre']}** (C1). "
+                f"Volatilidad Food CPI observada: **{cpi_cv:.1f} %** "
+                f"(rango: {cpi_min:.0f} – {cpi_max:.0f}). "
+                f"El gasto en alimentación supone el {mc['gasto_comida_pct']} del "
+                f"presupuesto familiar, lo que hace muy sensible cualquier subida del CPI."
+            )
+            color_box = "#e8f5e9"
+            border_color = "#27ae60"
+
+        st.markdown(
+            f"<div style='background:{color_box}; border-left:4px solid {border_color}; "
+            f"padding:12px 16px; border-radius:0 6px 6px 0; margin-top:12px; font-size:0.9em;'>"
+            f"{volatilidad_txt}</div>",
+            unsafe_allow_html=True,
+        )
+        st.caption(
+            "Fuente contexto inflación: FMI / Banco Mundial. "
+            "Datos CPI: FAOSTAT 2010–2022. "
+            "Volatilidad medida como coeficiente de variación (CV = σ/μ)."
+        )
+
 # ── TABLA RESUMEN ─────────────────────────────────────────────────
 with st.expander("📋 Datos históricos completos"):
     cols_show = ["Year"] + MACROS + ["Total_DES_Kcal", "CO2eq_t_per_capita", "Food_CPI"]
@@ -142,4 +249,62 @@ with st.expander("📋 Datos históricos completos"):
     st.dataframe(
         sub[cols_show].rename(columns=MACRO_LABELS).set_index("Year").style.format(fmt),
         use_container_width=True,
+    )
+
+# ── PENDIENTE 4: Contexto macroeconómico del clúster (Marina Aguinacio) ──
+st.markdown("---")
+st.subheader("🏦 Contexto macroeconómico del clúster")
+st.caption(
+    "Datos aproximados elaborados por Marina Aguinacio a partir de World Bank, OMS, FAO, PNUD y OCDE. "
+    "Adecuados para contexto narrativo; no citar como cifras exactas."
+)
+
+mc = MACRO_CLUSTER[cluster_id]
+color_c = CLUSTER_COLORS[cluster_id]
+
+col_info, col_tabla = st.columns([1, 2])
+
+with col_info:
+    st.markdown(
+        f"<div style='background:{color_c}18; border:1px solid {color_c}44; "
+        f"border-radius:8px; padding:16px 18px;'>"
+        f"<div style='font-size:0.78em; color:#666; margin-bottom:4px;'>Clúster {cluster_id}</div>"
+        f"<div style='font-size:1.1em; font-weight:700; color:{color_c};'>{mc['nombre']}</div>"
+        f"<div style='font-size:0.82em; color:#555; margin-top:8px; line-height:1.6;'>{mc['nota']}</div>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
+with col_tabla:
+    macro_rows = [
+        ("Países en el clúster",        str(mc["n_paises"])),
+        ("PIB per cápita (rango aprox.)", mc["pib_per_capita"]),
+        ("Gasto en alimentación",        mc["gasto_comida_pct"]),
+        ("Emisiones agroalimentarias",   mc["emisiones_alim_pct"]),
+        ("Tasa de obesidad",             mc["obesidad_pct"]),
+        ("Esperanza de vida",            mc["esperanza_vida"]),
+        ("Objetivo inflación",           mc["objetivo_inflacion"]),
+    ]
+    df_macro = pd.DataFrame(macro_rows, columns=["Indicador", "Valor (aprox.)"])
+    st.dataframe(df_macro.set_index("Indicador"), use_container_width=True)
+
+# Comparativa de los tres clústeres
+with st.expander("📊 Comparativa macro entre los 3 clústeres"):
+    rows_comp = []
+    for cid, datos in MACRO_CLUSTER.items():
+        rows_comp.append({
+            "Clúster": f"C{cid} — {datos['nombre']}",
+            "PIB per cápita":            datos["pib_per_capita"],
+            "Gasto alimentación":        datos["gasto_comida_pct"],
+            "Emisiones agroalim.":       datos["emisiones_alim_pct"],
+            "Obesidad":                  datos["obesidad_pct"],
+            "Esperanza de vida":         datos["esperanza_vida"],
+            "Objetivo inflación":        datos["objetivo_inflacion"],
+        })
+    df_comp = pd.DataFrame(rows_comp).set_index("Clúster")
+    st.dataframe(df_comp, use_container_width=True)
+    st.caption(
+        "La Ley de Engel explica el gradiente de gasto en alimentación: "
+        "C0 (6–15 %) → C2 (35–50 %) → C1 (50–65 %). "
+        "A mayor renta, menor proporción del presupuesto destinada a comida."
     )

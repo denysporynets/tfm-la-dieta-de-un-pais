@@ -8,6 +8,11 @@ import pandas as pd
 import sys
 from pathlib import Path
 
+def hex_rgba(hex_color: str, alpha: float) -> str:
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import (
     load_clusters,
@@ -58,7 +63,7 @@ for i, pais in enumerate(seleccion):
         r=valores_cierre,
         theta=etiquetas,
         fill="toself",
-        fillcolor=COMPARADOR_COLORS[i] + "22",
+        fillcolor=hex_rgba(COMPARADOR_COLORS[i], 0.13),
         line=dict(color=COMPARADOR_COLORS[i], width=2.5),
         name=pais,
         hovertemplate="%{theta}: %{r:.1%}<extra>" + pais + "</extra>",
