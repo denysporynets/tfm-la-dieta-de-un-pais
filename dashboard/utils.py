@@ -131,7 +131,7 @@ def predict_co2(pct_values: list[float], food_cpi: float, cluster_id: int) -> fl
     pcts = pcts / pcts.sum()
     log_cpi = np.log(food_cpi)
     X = np.array([[*pcts, log_cpi, cluster_id]])
-    return float(model.predict(X)[0])
+    return float(model.booster_.predict(X)[0])
 
 
 def dominant_macro(row: pd.Series) -> str:
