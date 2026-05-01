@@ -151,40 +151,61 @@ with col_res:
     fig_gauge.update_layout(height=300, margin=dict(t=40, b=10, l=30, r=30))
     st.plotly_chart(fig_gauge, use_container_width=True)
 
-    # Radar: escenario vs referencia (si hay país seleccionado)
+    # Barras horizontales agrupadas: escenario vs referencia
     st.markdown("**Composición dietaria del escenario**")
-    etiquetas_r = [MACRO_LABELS[m] for m in MACROS] + [MACRO_LABELS[MACROS[0]]]
-    valores_esc = [pct_norm[m] for m in MACROS] + [pct_norm[MACROS[0]]]
+    labels_bar  = [MACRO_LABELS[m] for m in MACROS]
+    vals_esc    = [pct_norm[m] * 100 for m in MACROS]
+    colors_esc  = [MACRO_COLORS[m] for m in MACROS]
+    x_max       = 80
 
-    fig_radar = go.Figure()
-    fig_radar.add_trace(go.Scatterpolar(
-        r=valores_esc,
-        theta=etiquetas_r,
-        fill="toself",
-        fillcolor="rgba(37,99,235,0.15)",
-        line=dict(color="#2563eb", width=2.5),
-        name="Escenario simulado",
-    ))
+    fig_bars = go.Figure()
 
     if co2_ref_val is not None:
-        vals_ref_r = [float(df[(df["Area"] == pais_ref) & (df["Year"] == 2022)][m].values[0]) for m in MACROS]
-        vals_ref_r_c = vals_ref_r + [vals_ref_r[0]]
-        fig_radar.add_trace(go.Scatterpolar(
-            r=vals_ref_r_c,
-            theta=etiquetas_r,
-            fill="toself",
-            fillcolor="rgba(192,57,43,0.1)",
-            line=dict(color="#c0392b", width=1.5, dash="dash"),
+        vals_ref = [
+            float(df[(df["Area"] == pais_ref) & (df["Year"] == 2022)][m].values[0]) * 100
+            for m in MACROS
+        ]
+        x_max = max(x_max, max(vals_ref) * 1.25, max(vals_esc) * 1.25)
+        fig_bars.add_trace(go.Bar(
+            x=vals_ref,
+            y=labels_bar,
+            orientation="h",
             name=f"{pais_ref} 2022",
+            marker=dict(color=colors_esc, opacity=0.30,
+                        line=dict(color=colors_esc, width=1.5)),
+            text=[f"{v:.1f}%" for v in vals_ref],
+            textposition="outside",
+            textfont=dict(size=11, color="#555"),
         ))
+    else:
+        x_max = max(x_max, max(vals_esc) * 1.25)
 
-    fig_radar.update_layout(
-        polar=dict(radialaxis=dict(visible=True, range=[0, 0.7], tickformat=".0%")),
-        height=360,
-        legend=dict(orientation="h", yanchor="bottom", y=-0.15),
-        margin=dict(t=20, b=60),
+    fig_bars.add_trace(go.Bar(
+        x=vals_esc,
+        y=labels_bar,
+        orientation="h",
+        name="Escenario simulado",
+        marker=dict(color=colors_esc, opacity=0.90),
+        text=[f"{v:.1f}%" for v in vals_esc],
+        textposition="outside",
+        textfont=dict(size=11, color="#1a1a2e"),
+    ))
+
+    fig_bars.update_layout(
+        barmode="group",
+        height=340,
+        xaxis=dict(
+            title="% calórico",
+            range=[0, x_max],
+            ticksuffix="%",
+            gridcolor="#ececec",
+        ),
+        yaxis=dict(title="", autorange="reversed"),
+        plot_bgcolor="#ffffff",
+        legend=dict(orientation="h", yanchor="bottom", y=-0.22, x=0),
+        margin=dict(t=10, b=70, l=10, r=90),
     )
-    st.plotly_chart(fig_radar, use_container_width=True)
+    st.plotly_chart(fig_bars, use_container_width=True)
 
 # ── DRIVERS SHAP ──────────────────────────────────────────────────
 st.markdown("---")
