@@ -15,12 +15,14 @@ def hex_rgba(hex_color: str, alpha: float) -> str:
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import (
-    load_clusters,
+    load_clusters, load_css, render_nav,
     MACROS, MACRO_LABELS, MACRO_COLORS,
     CLUSTER_NAMES, CLUSTER_COLORS,
 )
 
 st.set_page_config(page_title="Comparador · La Dieta de un País", page_icon="📊", layout="wide")
+load_css()
+render_nav("comparador")
 
 st.title("📊 Comparador de Países")
 st.caption("Compara la composición dietaria y huella de CO₂ de hasta 4 países en un radar chart")

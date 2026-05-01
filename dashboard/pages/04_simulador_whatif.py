@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import (
-    load_clusters,
+    load_clusters, load_css, render_nav,
     load_lgb_model,
     MACROS, MACRO_LABELS, MACRO_COLORS,
     CLUSTER_NAMES, CLUSTER_COLORS,
@@ -22,6 +22,8 @@ st.set_page_config(
     page_icon="🎛️",
     layout="wide",
 )
+load_css()
+render_nav("simulador", hide_sidebar=True)
 
 st.title("🎛️ Simulador What-If")
 st.caption(

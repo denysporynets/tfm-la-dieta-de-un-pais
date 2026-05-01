@@ -12,12 +12,15 @@ def hex_rgba(hex_color: str, alpha: float) -> str:
     return f"rgba({r},{g},{b},{alpha})"
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils import load_css, render_nav
 
 st.set_page_config(
     page_title="Motor C: Forecast Dietario",
     page_icon="📈",
     layout="wide"
 )
+load_css()
+render_nav("forecast", hide_sidebar=True)
 
 # ── RUTAS ────────────────────────────────────────────────────────
 BASE      = Path(__file__).parent.parent.parent / "processed"

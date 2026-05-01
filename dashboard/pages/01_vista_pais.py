@@ -11,11 +11,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import (
-    load_clusters,
+    load_clusters, load_css, render_nav,
     MACROS, MACRO_LABELS, MACRO_COLORS,
     CLUSTER_NAMES, CLUSTER_COLORS,
     dominant_macro,
 )
+
+load_css()
+render_nav("vista")
 
 # ── DATOS MACRO POR CLÚSTER (Marina Aguinacio, World Bank/OMS/FAO/PNUD/OCDE) ─
 MACRO_CLUSTER = {

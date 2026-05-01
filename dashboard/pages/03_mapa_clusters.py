@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import (
-    load_clusters,
+    load_clusters, load_css, render_nav,
     MACROS, MACRO_LABELS,
     CLUSTER_NAMES, CLUSTER_COLORS,
     COUNTRY_ISO3,
@@ -19,6 +19,8 @@ from utils import (
 )
 
 st.set_page_config(page_title="Mapa Clústeres · La Dieta de un País", page_icon="🗺️", layout="wide")
+load_css()
+render_nav("mapa")
 
 st.title("🗺️ Mapa de Tipologías Dietarias")
 st.caption("Distribución geográfica de las 3 tipologías detectadas por K-Means (K=3)")
