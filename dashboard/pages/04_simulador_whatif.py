@@ -226,3 +226,66 @@ st.caption(
     "Los signos SHAP se interpretan con el beeswarm — en datos composicionales (suma=1.0) "
     "el SHAP medio con signo ≈ 0 es comportamiento esperado."
 )
+
+# ── SECCIÓN LITERATURA Y VISIÓN DE NEGOCIO ───────────────────────
+st.markdown("---")
+st.markdown(
+    """
+    <div style="background:#f5f5f7; border-radius:12px; padding:28px 32px; margin-top:8px;">
+
+      <h3 style="color:#1a1a2e; font-size:1.15rem; font-weight:700; margin-bottom:18px;">
+        📖 Acerca del Global Dietary Simulator
+      </h3>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+        <div>
+          <h4 style="color:#1a1a2e; font-size:0.9rem; font-weight:700; margin-bottom:8px;">
+            ¿Cómo se usa?
+          </h4>
+          <ol style="color:#444; font-size:0.83rem; line-height:1.75; padding-left:18px; margin:0;">
+            <li><strong>Selecciona un país</strong> como punto de partida — los sliders se cargan con su dieta real de 2022.</li>
+            <li><strong>Ajusta los sliders</strong> de cada macrocategoría calórica. La suma se normaliza automáticamente a 100 %.</li>
+            <li><strong>Elige la tipología</strong> dietaria del escenario (C0 Proteica · C1 Tuberosa · C2 Cereal-Dependiente).</li>
+            <li><strong>Lee el resultado</strong>: el gauge muestra la huella de CO₂eq predicha; las barras comparan tu escenario con el país de referencia.</li>
+          </ol>
+        </div>
+
+        <div>
+          <h4 style="color:#1a1a2e; font-size:0.9rem; font-weight:700; margin-bottom:8px;">
+            ¿Para qué sirve?
+          </h4>
+          <ul style="color:#444; font-size:0.83rem; line-height:1.75; padding-left:18px; margin:0;">
+            <li><strong>Políticas públicas:</strong> cuantifica el impacto de cambios dietarios antes de legislar incentivos o subsidios alimentarios.</li>
+            <li><strong>Industria agroalimentaria:</strong> evalúa la huella de reformulaciones de producto o cambios en la cesta de compra.</li>
+            <li><strong>Investigación nutricional:</strong> contrasta hipótesis dietarias con un modelo entrenado en datos reales FAOSTAT (2010–2022).</li>
+            <li><strong>Educación:</strong> ilustra en tiempo real la relación entre patrón alimentario y emisiones de CO₂eq.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div style="margin-top:22px; padding-top:18px; border-top:1px solid #ddd;">
+        <h4 style="color:#1a1a2e; font-size:0.9rem; font-weight:700; margin-bottom:10px;">
+          Base científica
+        </h4>
+        <p style="color:#444; font-size:0.83rem; line-height:1.7; margin:0;">
+          El modelo predictivo reproduce la jerarquía de emisiones documentada por
+          <strong>Poore &amp; Nemecek (2018, <em>Science</em>)</strong> — sin haber sido entrenado con esa información —,
+          lo que valida su coherencia con el consenso IPCC sobre impacto agroalimentario.
+          Los datos de composición dietaria provienen de las <strong>Food Balance Sheets de FAOSTAT</strong>
+          (30 países · 2010–2022), y el índice de precios alimentarios de la
+          <strong>FAO Food Price Index</strong> (base 2015 = 100).
+          La huella de carbono objetivo integra emisiones de producción, procesado y distribución
+          expresadas en <strong>CO₂ equivalente per cápita</strong> (t CO₂eq/año).
+        </p>
+        <p style="color:#777; font-size:0.78rem; margin-top:10px; margin-bottom:0;">
+          Poore, J. &amp; Nemecek, T. (2018). Reducing food's environmental impacts through producers and consumers.
+          <em>Science</em>, 360(6392), 987–992. · FAO (2024). FAOSTAT Food Balance Sheets. · IPCC (2022). AR6 WGIII Ch.12.
+        </p>
+      </div>
+
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
