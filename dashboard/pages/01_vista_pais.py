@@ -177,8 +177,8 @@ with tab2:
         height=450,
         legend=dict(orientation="h", yanchor="bottom", y=-0.25),
     )
-    fig2.update_yaxes(title_text="t CO₂eq / cápita", secondary_y=False)
-    fig2.update_yaxes(title_text="Food CPI (2015=100)", secondary_y=True)
+    fig2.update_yaxes(title_text="t CO₂eq / cápita", rangemode="tozero", secondary_y=False)
+    fig2.update_yaxes(title_text="Food CPI (2015=100)", rangemode="tozero", secondary_y=True)
     st.plotly_chart(fig2, use_container_width=True)
     st.caption(
         "El CO₂eq incluye emisiones del sistema agroalimentario (AFOLU) per cápita. "
@@ -291,20 +291,46 @@ with col_tabla:
     st.dataframe(df_macro.set_index("Indicador"), use_container_width=True)
 
 # Comparativa de los tres clústeres
-with st.expander("📊 Comparativa macro entre los 3 clústeres"):
-    rows_comp = []
+with st.expander("📊 Comparativa macro entre los 3 clústeres", expanded=True):
+    _CL_COLORS = {0: "#0d9488", 1: "#d97706", 2: "#7c3aed"}
+    _HEADERS = ["Clúster", "PIB per cápita", "Gasto alim.", "Emisiones", "Obesidad", "Esp. vida", "Inflación obj."]
+    _WIDTHS  = ["22%", "16%", "11%", "11%", "9%", "12%", "19%"]
+
+    th_style = "padding:8px 10px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#57534e;background:#f5f4f2;border-bottom:2px solid #e7e5e4;white-space:nowrap"
+    td_style = "padding:9px 10px;font-size:.83rem;color:#1c1917;border-bottom:1px solid #f0eeec;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"
+
+    cols_html = "".join(f'<col style="width:{w}">' for w in _WIDTHS)
+    head_html = "".join(f'<th style="{th_style}">{h}</th>' for h in _HEADERS)
+
+    rows_html = ""
     for cid, datos in MACRO_CLUSTER.items():
-        rows_comp.append({
-            "Clúster": f"C{cid} — {datos['nombre']}",
-            "PIB per cápita":            datos["pib_per_capita"],
-            "Gasto alimentación":        datos["gasto_comida_pct"],
-            "Emisiones agroalim.":       datos["emisiones_alim_pct"],
-            "Obesidad":                  datos["obesidad_pct"],
-            "Esperanza de vida":         datos["esperanza_vida"],
-            "Objetivo inflación":        datos["objetivo_inflacion"],
-        })
-    df_comp = pd.DataFrame(rows_comp).set_index("Clúster")
-    st.dataframe(df_comp, use_container_width=True)
+        c = _CL_COLORS[cid]
+        name_cell = (
+            f'<td style="{td_style};border-left:3px solid {c};padding-left:8px">'
+            f'<span style="color:{c};font-weight:700">C{cid}</span>'
+            f' — {datos["nombre"]}</td>'
+        )
+        vals = [
+            datos["pib_per_capita"],
+            datos["gasto_comida_pct"],
+            datos["emisiones_alim_pct"],
+            datos["obesidad_pct"],
+            datos["esperanza_vida"],
+            datos["objetivo_inflacion"],
+        ]
+        val_cells = "".join(f'<td style="{td_style}">{v}</td>' for v in vals)
+        bg = "background:#fafaf9" if cid % 2 == 0 else ""
+        rows_html += f'<tr style="{bg}">{name_cell}{val_cells}</tr>'
+
+    st.markdown(
+        f'<div style="overflow:hidden;border-radius:10px;border:1px solid #e7e5e4;margin-bottom:12px">'
+        f'<table style="width:100%;border-collapse:collapse;table-layout:fixed">'
+        f'<colgroup>{cols_html}</colgroup>'
+        f'<thead><tr>{head_html}</tr></thead>'
+        f'<tbody>{rows_html}</tbody>'
+        f'</table></div>',
+        unsafe_allow_html=True,
+    )
     st.caption(
         "La Ley de Engel explica el gradiente de gasto en alimentación: "
         "C0 (6–15 %) → C2 (35–50 %) → C1 (50–65 %). "
