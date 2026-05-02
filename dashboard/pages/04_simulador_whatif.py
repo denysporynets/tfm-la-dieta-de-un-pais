@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import numpy as np
 import sys
 from pathlib import Path
+import streamlit.components.v1 as components
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import (
@@ -231,9 +232,9 @@ st.caption(
 
 # ── SECCIÓN LITERATURA Y VISIÓN DE NEGOCIO ───────────────────────
 st.markdown("---")
-st.markdown(
+components.html(
     """
-    <div style="background:#f5f5f7; border-radius:12px; padding:28px 32px; margin-top:8px;">
+    <div style="background:#f5f5f7; border-radius:12px; padding:28px 32px; margin-top:8px; font-family:Inter,-apple-system,sans-serif;">
 
       <h3 style="color:#1a1a2e; font-size:1.15rem; font-weight:700; margin-bottom:18px;">
         📖 Acerca del Global Dietary Simulator
@@ -289,5 +290,6 @@ st.markdown(
 
     </div>
     """,
-    unsafe_allow_html=True,
+    height=380,
+    scrolling=False,
 )

@@ -17,6 +17,7 @@ from utils import (
     dominant_macro,
 )
 
+st.set_page_config(page_title="Vista País · La Dieta de un País", page_icon="🌍", layout="wide")
 load_css()
 render_nav("vista")
 
@@ -69,8 +70,6 @@ MACRO_CLUSTER = {
         ),
     },
 }
-
-st.set_page_config(page_title="Vista País · La Dieta de un País", page_icon="🌍", layout="wide")
 
 st.title("🌍 Vista País")
 st.caption("Evolución histórica de la composición dietaria y huella de CO₂ (2010–2022)")
