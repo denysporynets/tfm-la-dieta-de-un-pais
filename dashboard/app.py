@@ -224,7 +224,26 @@ def make_galaxy_html(df: pd.DataFrame) -> str:
         m = np.abs(coords[:, i]).max()
         if m > 0:
             normed = coords[:, i] / m  # [-1, 1]
-            coords[:, i] = np.sign(normed) * np.abs(normed) ** 0.5 * 0.92
+            coords[:, i] = np.sign(normed) * np.abs(normed) ** 0.42 * 0.95
+
+    # Repulsión: empuja estrellas demasiado cercanas para reducir aglomeración
+    min_d = 0.13
+    for _ in range(60):
+        for a in range(len(coords)):
+            for b in range(a + 1, len(coords)):
+                dx = coords[b, 0] - coords[a, 0]
+                dy = coords[b, 1] - coords[a, 1]
+                d = (dx ** 2 + dy ** 2) ** 0.5
+                if d < min_d and d > 1e-9:
+                    push = (min_d - d) * 0.35 / d
+                    coords[a, 0] -= dx * push * 0.5
+                    coords[a, 1] -= dy * push * 0.5
+                    coords[b, 0] += dx * push * 0.5
+                    coords[b, 1] += dy * push * 0.5
+    for i in range(2):
+        m = np.abs(coords[:, i]).max()
+        if m > 0:
+            coords[:, i] = coords[:, i] / m * 0.95
 
     _colors = {0: "#26d9c7", 1: "#ffd54f", 2: "#ff8a65"}
     co2_vals = df22["CO2eq_t_per_capita"].values
